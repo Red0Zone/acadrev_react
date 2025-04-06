@@ -1,0 +1,41 @@
+@import "tailwindcss";
+/* === Global Styles (e.g., index.css or App.css) === */
+
+/* Default (Light Mode) Styles */
+body {
+  @apply bg-gray-100 text-gray-800 transition-colors duration-300;
+  /* Or standard CSS:
+     background-color: #f3f4f6;
+     color: #1f2937;
+     transition: background-color 0.3s ease, color 0.3s ease;
+  */
+}
+
+/* Dark Mode Styles */
+body.dark-mode {
+  @apply bg-gray-900 text-gray-100;
+   /* Or standard CSS:
+     background-color: #111827;
+     color: #f9fafb;
+   */
+}
+
+/* Optional: You can also define CSS variables for more complex themes */
+:root {
+  --background-default: theme('colors.gray.100');
+  --text-default: theme('colors.gray.800');
+  /* ... other light mode variables */
+}
+
+body.dark-mode {
+  --background-default: theme('colors.gray.900');
+  --text-default: theme('colors.gray.100');
+  /* ... other dark mode variables */
+}
+
+body {
+  background-color: var(--background-default);
+  color: var(--text-default);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
