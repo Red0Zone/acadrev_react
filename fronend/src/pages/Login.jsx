@@ -264,7 +264,11 @@ function Login({ onLogin }) {
         </div>
       </main>
 
-      <Footer darkMode={darkMode} />
+      <Footer 
+        darkMode={darkMode} 
+        onLogout={onLogin} 
+        buttonText="Switch to Dashboard (Demo)" 
+      />
     </div>
   );
 }

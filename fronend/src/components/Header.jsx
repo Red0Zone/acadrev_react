@@ -1,28 +1,42 @@
-import React from "react";
-import "./Header.css";
+"use client"
+import { motion } from "framer-motion"
+import { GraduationCap, Moon, Sun } from "lucide-react"
+import "./Header.css"
 
 function Header({ darkMode, toggleDarkMode }) {
   return (
     <header
       className={`header-container ${
         darkMode
-          ? "bg-gray-800 border-b border-gray-700"
-          : "bg-white border-b border-gray-200"
+          ? "bg-gray-800/80 border-b border-gray-700/50 backdrop-blur-md"
+          : "bg-white/80 border-b border-gray-200/50 backdrop-blur-md"
       }`}
     >
-      <div className="container mx-auto px-4 flex justify-between items-center">
-        <h1
-          className={`text-xl font-bold ${
-            darkMode ? "text-blue-400" : "text-blue-600"
-          }`}
+      <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex items-center gap-2"
         >
-          AcadRev
-        </h1>
+          {/* Logo icon */}
+          <GraduationCap className={`w-6 h-6 ${darkMode ? "text-primary-400" : "text-primary-600"}`} />
 
-        {/* Dark Mode Toggle */}
-        <button
+          <h1
+            className={`text-xl font-bold bg-gradient-to-r ${
+              darkMode ? "from-blue-400 to-purple-400" : "from-blue-600 to-purple-600"
+            } bg-clip-text text-transparent`}
+          >
+            AcadRev
+          </h1>
+        </motion.div>
+
+        {/* Dark Mode Toggle with animation */}
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
           onClick={toggleDarkMode}
-          className={`p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+          className={`p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
             darkMode
               ? "bg-gray-700 hover:bg-gray-600 focus:ring-offset-gray-800"
               : "bg-gray-200 hover:bg-gray-300 focus:ring-offset-white"
@@ -30,32 +44,29 @@ function Header({ darkMode, toggleDarkMode }) {
           aria-label={`Switch to ${darkMode ? "light" : "dark"} mode`}
         >
           {darkMode ? (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-yellow-300"
-              viewBox="0 0 20 20"
-              fill="currentColor"
+            <motion.div
+              initial={{ rotate: -90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: 90, opacity: 0 }}
+              transition={{ duration: 0.3 }}
             >
-              <path
-                fillRule="evenodd"
-                d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
-                clipRule="evenodd"
-              />
-            </svg>
+              <Sun className="h-5 w-5 text-yellow-300" />
+            </motion.div>
           ) : (
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5 text-gray-700"
-              viewBox="0 0 20 20"
-              fill="currentColor"
+            <motion.div
+              initial={{ rotate: 90, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              exit={{ rotate: -90, opacity: 0 }}
+              transition={{ duration: 0.3 }}
             >
-              <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-            </svg>
+              <Moon className="h-5 w-5 text-gray-700" />
+            </motion.div>
           )}
-        </button>
+        </motion.button>
       </div>
     </header>
-  );
+  )
 }
 
-export default Header;
+export default Header
+
