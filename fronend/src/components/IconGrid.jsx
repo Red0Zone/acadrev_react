@@ -25,43 +25,37 @@ const navCards = [
     id: 1, 
     icon: <Building2 className="w-6 h-6" />, 
     title: "University", 
-    subtitle: "الجامعات", 
-    color: "from-blue-500 to-cyan-400" 
+    subtitle: "الجامعات"
   },
   { 
     id: 2, 
     icon: <GraduationCap className="w-6 h-6" />, 
     title: "College", 
-    subtitle: "الكليات", 
-    color: "from-purple-500 to-pink-500" 
+    subtitle: "الكليات"
   },
   { 
     id: 3, 
     icon: <Settings className="w-6 h-6" />, 
     title: "Settings", 
-    subtitle: "الإعدادات", 
-    color: "from-amber-500 to-orange-500" 
+    subtitle: "الإعدادات"
   },
   { 
     id: 4, 
     icon: <MessageSquare className="w-6 h-6" />, 
     title: "Messages", 
-    subtitle: "الرسائل", 
-    color: "from-green-500 to-emerald-500" 
+    subtitle: "الرسائل"
   },
   { 
     id: 5, 
     icon: <Users className="w-6 h-6" />, 
     title: "Users", 
-    subtitle: "المستخدمون", 
-    color: "from-violet-500 to-indigo-500" 
+    subtitle: "المستخدمون"
   },
   { 
     id: 6, 
     icon: <BarChart3 className="w-6 h-6" />, 
     title: "Reports", 
-    subtitle: "التقارير", 
-    color: "from-rose-500 to-red-500" 
+    subtitle: "التقارير"
   },
 ]
 
@@ -85,8 +79,7 @@ function IconGrid({ userLevel = 1 }) {
           <DashboardCard 
             icon={card.icon} 
             title={card.title} 
-            subtitle={card.subtitle} 
-            color={card.color} 
+            subtitle={card.subtitle}
           />
         </motion.div>
       ))}

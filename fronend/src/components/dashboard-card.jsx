@@ -3,6 +3,32 @@
 import { motion } from "framer-motion"
 import { useEffect, useState } from "react"
 
+// Helper function to get border color based on color prop
+const getBorderColor = (color) => {
+  switch (color) {
+    case "blue": return "var(--border-primary)";
+    case "purple": return "var(--border-purple)";
+    case "amber": return "var(--border-amber)";
+    case "green": return "var(--border-green)";
+    case "violet": return "var(--border-violet)";
+    case "rose": return "var(--border-rose)";
+    default: return "var(--border-main)";
+  }
+}
+
+// Helper function to get icon color based on color prop
+const getIconColor = (color) => {
+  switch (color) {
+    case "blue": return "var(--text-primary)";
+    case "purple": return "var(--text-purple)";
+    case "amber": return "var(--text-amber)";
+    case "green": return "var(--text-green)";
+    case "violet": return "var(--text-violet)";
+    case "rose": return "var(--text-rose)";
+    default: return "var(--text-main)";
+  }
+}
+
 export function DashboardCard({ icon, title, subtitle, color }) {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
@@ -25,30 +51,8 @@ export function DashboardCard({ icon, title, subtitle, color }) {
     return () => observer.disconnect();
   }, []);
 
-  // Define border color based on card type
-  const getBorderColor = () => {
-    if (color.includes("blue")) return "border-blue-400";
-    if (color.includes("purple")) return "border-purple-400";
-    if (color.includes("amber")) return "border-amber-400";
-    if (color.includes("green")) return "border-green-400";
-    if (color.includes("violet")) return "border-violet-400";
-    if (color.includes("rose")) return "border-rose-400";
-    return "border-gray-400"; // default
-  };
-
-  // Define icon color based on card type
-  const getIconColor = () => {
-    if (color.includes("blue")) return "text-blue-500";
-    if (color.includes("purple")) return "text-purple-500";
-    if (color.includes("amber")) return "text-amber-500";
-    if (color.includes("green")) return "text-green-500";
-    if (color.includes("violet")) return "text-violet-500";
-    if (color.includes("rose")) return "text-rose-500";
-    return "text-gray-500"; // default
-  };
-
-  const borderColor = getBorderColor();
-  const iconColor = getIconColor();
+  const borderColor = getBorderColor(color);
+  const iconColor = getIconColor(color);
   
   return (
     <motion.div
@@ -59,56 +63,75 @@ export function DashboardCard({ icon, title, subtitle, color }) {
       <a href={`/${title.toLowerCase()}`} className="block h-full">
         <div
           className={`
-          relative
-          rounded-xl 
-          h-full
-          transition-all duration-300
-          ${isDarkMode 
-            ? 'bg-gradient-to-br from-gray-800 to-gray-900 text-white' 
-            : 'bg-gradient-to-br from-gray-50 to-white text-gray-800'
-          } 
-          backdrop-blur-sm 
-          border-2 ${borderColor} ${isDarkMode ? 'border-opacity-40' : 'border-opacity-60'}
-          shadow-md hover:shadow-xl
-          p-6
-          flex flex-col items-center
-          text-center
-        `}
+            relative
+            rounded-xl
+            h-full
+            transition-all duration-300
+            backdrop-blur-sm
+            border
+            shadow-lg hover:shadow-xl
+            p-6
+            flex flex-col items-center
+            text-center
+            group
+            ${isDarkMode 
+              ? "bg-gray-800/50 border-gray-700/50 text-white" 
+              : "bg-white/80 border-gray-200/50 text-gray-800"
+            }
+          `}
         >
           {/* Icon container with animation */}
           <div 
             className={`
               relative mb-4 p-4 
-              border-[1px] ${borderColor} ${isDarkMode ? 'border-opacity-40' : 'border-opacity-70'}
+              border
               rounded-full 
               transition-all duration-300 
-              hover:scale-110
+              group-hover:scale-110
               flex items-center justify-center
-              ${isDarkMode ? 'bg-gray-800/50' : 'bg-white/70'}
+              ${isDarkMode 
+                ? "bg-gray-700/50 border-gray-600/50" 
+                : "bg-gray-50 border-gray-200"
+              }
             `}
           >
-            <div
-              className={`
-              absolute inset-0 rounded-full opacity-0 hover:opacity-10
-              transition-opacity duration-300
-              bg-gradient-to-r ${color}
-            `}
-            ></div>
-
-            <div className={`w-10 h-10 flex items-center justify-center ${iconColor} ${isDarkMode ? 'opacity-90' : 'opacity-100'}`}>
+            <div 
+              className="w-10 h-10 flex items-center justify-center"
+            >
               {icon}
             </div>
           </div>
 
-          {/* English name with better typography */}
-          <h3 className={`text-base font-medium mb-1 ${iconColor}`}>
+          {/* Title with modern typography */}
+          <h3 
+            className={`
+              text-base font-semibold mb-1
+              ${isDarkMode ? "text-white" : "text-gray-800"}
+            `}
+          >
             {title}
           </h3>
 
-          {/* Arabic name with improved styling */}
-          <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+          {/* Subtitle with improved styling */}
+          <p className={`
+            text-sm
+            ${isDarkMode ? "text-gray-400" : "text-gray-600"}
+          `}>
             {subtitle}
           </p>
+
+          {/* Hover effect overlay */}
+          <div 
+            className={`
+              absolute inset-0 rounded-xl
+              opacity-0 group-hover:opacity-100
+              transition-opacity duration-300
+              ${isDarkMode 
+                ? "bg-gray-700/20" 
+                : "bg-gray-100/50"
+              }
+            `}
+          />
         </div>
       </a>
     </motion.div>
