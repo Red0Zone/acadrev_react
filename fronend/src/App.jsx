@@ -1,24 +1,40 @@
 import { useState } from "react";
-import Login from "./pages/Login";
-import Main from "./pages/Main";
 import "./App.css";
+import Login from './pages/Login'
+import MainPage from './pages/Main'
+import PageNotFound from './pages/PageNotFound'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import Header from "./components/Header.jsx";
+import Footer from "./components/Footer.jsx";
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <MainPage />,
+  },
+  {
+    path: '/main',
+    element: <MainPage />,
+  },
+  {
+    path: '/login',
+    element: <Login />,
+  },
+
+  {
+    path: '*',
+    element: <PageNotFound />,
+  },
+])
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-  // For demo purposes, toggle between login and main page
-  const handleLoginToggle = () => {
-    setIsLoggedIn(!isLoggedIn);
-  };
+ 
 
   return (
-    <div className="app-container">
-      {isLoggedIn ? (
-        <Main onLogout={handleLoginToggle} />
-      ) : (
-        <Login onLogin={handleLoginToggle} />
-      )}
-    </div>
+  <>
+    <Header/>
+   <RouterProvider router={router}/>
+   <Footer/>
+  </>
   );
 }
 
