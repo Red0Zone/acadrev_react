@@ -1,11 +1,11 @@
 "use client"
 import { motion } from "framer-motion"
 import { GraduationCap } from "lucide-react"
-import "./Header.css"
+import "./Header.module.css"
 
 function Header() {
   return (
-    <header className="header-container">
+    <header className="header-container h-16 flex items-center">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <motion.div
           initial={{ opacity: 0, x: -20 }}

@@ -1,11 +1,11 @@
 "use client"
 import { motion } from "framer-motion"
 import { GraduationCap } from "lucide-react"
-import "./Footer.css"
+import "./Footer.module.css"
 
 function Footer() {
   return (
-    <footer className="footer-container">
+    <footer className="footer-container max-h-12 flex items-center">
       <div className="container mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-4">
         <div className="flex items-center gap-2">
           <GraduationCap className="w-5 h-5 text-primary" />
