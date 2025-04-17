@@ -2,25 +2,29 @@
 
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from "../../context/AuthContext";
 import "./Login.css";
 
-// SVG Icon for the profile picture placeholder
-const UserIcon = ({ className }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    className={className}
-    aria-hidden="true"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-    />
-  </svg>
+const UserIcon = (props) => (
+    <svg
+       xmlns="http://www.w3.org/2000/svg"
+       fill="none"
+       viewBox="0 0 24 24"
+       strokeWidth={1.5}
+       stroke="currentColor"
+       {...props}
+    >
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+      />
+    </svg>
 );
 
 // SVG Icons for Password Visibility
@@ -58,12 +62,15 @@ const EyeSlashIcon = ({ className }) => (
   </svg>
 );
 
-function Login() {
+function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigation = useNavigate();
+  const auth = useAuth();
+
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -75,24 +82,17 @@ function Login() {
     }
 
     try {
-      // Here you would typically make an API call to your backend
-      // For example:
-      // const response = await fetch('/api/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ username, password })
-      // });
-      
-      // if (!response.ok) {
-      //   throw new Error('Login failed');
-      // }
-      
-      // const data = await response.json();
-      // Handle successful login (e.g., store token, redirect, etc.)
       
       console.log("Login attempt with:", { username, password });
-      navigation('/homepage');
-      // TODO: Implement actual login logic here
+      const loginResponse = await auth.login({username,password});
+      if(loginResponse.success){
+        console.log(`this is loginresponse: ${loginResponse.success}`)
+        navigation("/main");
+
+      }
+      else{
+        setError(loginResponse.error);
+      }
       
     } catch (err) {
       setError(err.message || "An error occurred during login");
@@ -108,6 +108,8 @@ function Login() {
       <main className="login-content">
         <div className="login-form-container">
           <div className="text-center mb-8">
+            {/* Using the modern UserIcon component */}
+            <UserIcon className="w-12 h-12 mx-auto mb-4" />
             <h2 className="text-2xl font-bold mb-2">Log in to your account</h2>
             <p className="text-medium">
               Enter your credentials to access your account
@@ -186,4 +188,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default LoginPage;

@@ -40,13 +40,13 @@ async function login(req, res) {
       if (passwordMatch) {
         // Generate a JWT token
         const token = jwt.sign(
-          { userId: user.id, username: user.username, level: user.level },
+          { userId: user.id, name: user.username, level: user.level },
           process.env.JWT_SECRET,
           { expiresIn: '1h' } // Token expires in 1 hour
         );
 
         // Send the token and user information in the response
-        res.json({ token, user: { id: user.id, username: user.username, level: user.level, email: user.email, university: user.university, college: user.college, department: user.department, program: user.program, perm: user.perm } });
+        res.json({ token, user: { id: user.id, name: user.username, level: user.level, email: user.email, university: user.university, college: user.college, department: user.department, program: user.program, perm: user.perm } });
       } else {
         res.status(401).json({ message: 'Invalid credentials' });
       }
