@@ -1,8 +1,8 @@
 "use client"
 import { motion } from "framer-motion"
 import { Home, BookOpen, Users, Settings, Bell, User, LogOut } from "lucide-react"
-import { Link, useNavigate } from "react-router-dom"
-import "./Navbar.module.css"
+import { Link } from "react-router-dom"
+import "./Navbar.css"
 
 const navItems = [
   { 
@@ -28,11 +28,11 @@ const navItems = [
     icon: <Settings className="w-5 h-5" />, 
     label: "Settings", 
     to: "/settings" 
-  }
+  },
+  
 ]
 
-function Navbar({ onLogout }) {
-  const navigate = useNavigate()
+function Navbar({ onLogout , userName, userLevel }) {
 
   return (
     <nav className="navbar-container">
@@ -46,10 +46,7 @@ function Navbar({ onLogout }) {
             className="flex items-center gap-2"
           >
             <Link to="/" className="flex items-center gap-2">
-              <BookOpen className="w-6 h-6 text-primary" />
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                AcadRev
-              </h1>
+              
             </Link>
           </motion.div>
         </div>
