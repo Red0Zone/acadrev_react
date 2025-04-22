@@ -4,7 +4,7 @@ import { motion } from "framer-motion"
 import { Link } from "react-router-dom"   
 
 
-export function DashboardCard({ icon, title, subtitle, color }) {
+export function DashboardCard({ icon, title, subtitle }) {
 
   
   return (
