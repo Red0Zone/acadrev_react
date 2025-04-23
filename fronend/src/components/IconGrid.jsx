@@ -1,6 +1,6 @@
 "use client"
 import { motion } from "framer-motion"
-import { Building2, GraduationCap, Settings, MessageSquare, Users, BarChart3 } from "lucide-react"
+import { Building2, GraduationCap, BookMarked, BookOpen, Users, BarChart3 } from "lucide-react"
 import { DashboardCard } from "./dashboard-card"
 
 // Animation variants for staggered children
@@ -35,15 +35,15 @@ const navCards = [
   },
   { 
     id: 3, 
-    icon: <Settings className="w-6 h-6" />, 
-    title: "Settings", 
-    subtitle: "الإعدادات"
+    icon: <BookMarked className="w-6 h-6" />, 
+    title: "Departments", 
+    subtitle: "الاقسام"
   },
   { 
     id: 4, 
-    icon: <MessageSquare className="w-6 h-6" />, 
-    title: "Messages", 
-    subtitle: "الرسائل"
+    icon: <BookOpen className="w-6 h-6" />, 
+    title: "Programs", 
+    subtitle: "البرامج"
   },
   { 
     id: 5, 

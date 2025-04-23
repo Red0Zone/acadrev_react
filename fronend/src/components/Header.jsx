@@ -8,7 +8,7 @@ function Header() {
   const { isLoggedIn, user } = useAuth() // Added logout function
 
   return (
-    <header className="header-container h-16 flex items-center">
+    <header className="header-container h-16 flex items-center ">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         {/* Logo and Title */}
         <motion.div
@@ -28,7 +28,7 @@ function Header() {
           {isLoggedIn && user ? (
             <>
               <span className="text-gray-700">
-                {user.name || "User"}, ID {user.level}
+                {user.name || "User"}, {user.level}
               </span>
             </>
           ) : null}
