@@ -1,8 +1,7 @@
 "use client"
-import { useState } from "react"
-import IconGrid from "../../components/IconGrid"
+import IconGrid from "../../components/Dashboard"
 import "./Main.css"
-function Main({ onLogout }) {
+function Main() {
   // Example user level - In a real app, you might get this from context, auth state, or an API
   const currentUserLevel = 1
 

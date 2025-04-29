@@ -5,10 +5,10 @@ import MainPage from './pages/Main';
 import PageNotFound from './pages/PageNotFound';
 import ManageUniPage from "./pages/University";
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom';
-import Header from "./components/Header.jsx"; // <-- Import Header
-import Footer from "./components/Footer.jsx"; // <-- Import Footer
+import Header from "./components/Header"; // <-- Import Header
+import Footer from "./components/Footer"; // <-- Import Footer
 import { useAuth } from "./context/AuthContext.jsx";
-import Navbar from "./components/Navbar.jsx";
+import Navbar from "./components/Navbar";
 import SettingsPage from "./pages/Settings";
 import UsersPage from "./pages/Users";
 import College from "./pages/college";
