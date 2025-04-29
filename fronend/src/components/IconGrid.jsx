@@ -1,6 +1,6 @@
 "use client"
 import { motion } from "framer-motion"
-import { Building2, GraduationCap, BookMarked, BookOpen, Users, BarChart3 } from "lucide-react"
+import { Building2, Landmark, BookOpen, Users, BarChart3, University } from "lucide-react"
 import { DashboardCard } from "./dashboard-card"
 
 // Animation variants for staggered children
@@ -23,26 +23,26 @@ const itemVariants = {
 const navCards = [
   { 
     id: 1, 
-    icon: <Building2 className="w-6 h-6" />, 
+    icon: <University className="w-6 h-6" />, 
     title: "University", 
     subtitle: "الجامعات"
   },
   { 
     id: 2, 
-    icon: <GraduationCap className="w-6 h-6" />, 
+    icon: <Building2 className="w-6 h-6" />, 
     title: "College", 
     subtitle: "الكليات"
   },
   { 
     id: 3, 
-    icon: <BookMarked className="w-6 h-6" />, 
-    title: "Departments", 
+    icon: <Landmark className="w-6 h-6" />, 
+    title: "Department", 
     subtitle: "الاقسام"
   },
   { 
     id: 4, 
     icon: <BookOpen className="w-6 h-6" />, 
-    title: "Programs", 
+    title: "Program", 
     subtitle: "البرامج"
   },
   { 

@@ -11,6 +11,7 @@ import { useAuth } from "./context/AuthContext.jsx";
 import Navbar from "./components/Navbar.jsx";
 import SettingsPage from "./pages/Settings";
 import UsersPage from "./pages/Users";
+import College from "./pages/college";
 import { useState } from "react";
 
 // Layout can remain simple, just rendering the matched route
@@ -20,7 +21,7 @@ function Layout() {
 
 function ProtectedRoute() {
   const { isLoggedIn, isLoading, user, logout } = useAuth();
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
 
   // Define heights for calculations (assuming h-16 for header)
   const headerHeight = "4rem"; // h-16
@@ -98,6 +99,7 @@ function App() {
             { path: 'users', element: <UsersPage /> },
             { path: 'university', element: <ManageUniPage /> },
             { path: 'settings', element: <SettingsPage /> },
+            { path: 'college', element: <College /> },
             // { path: 'notifications', element: <NotificationsPage /> },
           ],
         },
