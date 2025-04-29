@@ -10,13 +10,20 @@ import {
   LogOut,
   ChevronsLeft,
   ChevronsRight,
+  University,
+  Building2,
+  Landmark,
+  BookOpen,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 // navItems remains the same
 const navItems = [
   { id: 1, icon: <Home size={20} />, label: "Home", to: "/" },
-  { id: 2, icon: <User size={20} />, label: "Profile", to: "/profile" },
+  { id: 2, icon: <University size={20} />, label: "University", to: "/university" },
+  { id: 3, icon: <Building2 size={20} />, label: "College", to: "/college" },
+  { id: 3, icon: <Landmark size={20} />, label: "Department", to: "/department  " },
+  { id: 3, icon: <BookOpen size={20} />, label: "Program", to: "/program" },
   { id: 4, icon: <Bell size={20} />, label: "Notifications", to: "/notifications" },
   { id: 5, icon: <Settings size={20} />, label: "Settings", to: "/settings" },
 ];

@@ -5,12 +5,13 @@ import MainPage from './pages/Main';
 import PageNotFound from './pages/PageNotFound';
 import ManageUniPage from "./pages/University";
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom';
-import Header from "./components/Header.jsx"; // <-- Import Header
-import Footer from "./components/Footer.jsx"; // <-- Import Footer
+import Header from "./components/Header"; // <-- Import Header
+import Footer from "./components/Footer"; // <-- Import Footer
 import { useAuth } from "./context/AuthContext.jsx";
-import Navbar from "./components/Navbar.jsx";
+import Navbar from "./components/Navbar";
 import SettingsPage from "./pages/Settings";
 import UsersPage from "./pages/Users";
+import College from "./pages/college";
 import { useState } from "react";
 
 // Layout can remain simple, just rendering the matched route
@@ -20,7 +21,7 @@ function Layout() {
 
 function ProtectedRoute() {
   const { isLoggedIn, isLoading, user, logout } = useAuth();
-  const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
 
   // Define heights for calculations (assuming h-16 for header)
   const headerHeight = "4rem"; // h-16
@@ -98,6 +99,7 @@ function App() {
             { path: 'users', element: <UsersPage /> },
             { path: 'university', element: <ManageUniPage /> },
             { path: 'settings', element: <SettingsPage /> },
+            { path: 'college', element: <College /> },
             // { path: 'notifications', element: <NotificationsPage /> },
           ],
         },
