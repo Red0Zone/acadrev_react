@@ -3,8 +3,6 @@
 const db = require('../config/db'); // Adjust the path as necessary
 const jwt = require('jsonwebtoken');
 
-const userModel = require('../models/userModel'); // Import userModel
-
 // Login function (NO HASHING - INSECURE)
 async function login(req, res) {
   const { username, password } = req.body;
@@ -13,6 +11,7 @@ async function login(req, res) {
   console.log('Username from request:', username);
   console.log('Password from request:', password);
 
+  
   if (!username || !password) {
     return res.status(400).json({ message: 'Username and password are required' });
   }

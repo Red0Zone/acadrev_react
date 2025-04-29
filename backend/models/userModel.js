@@ -1,49 +1,39 @@
-// models/userModel.js
+const db = require('../config/db');
 
-const userModel = {
-  id: {
-    type: 'INT',
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  username: {
-    type: 'VARCHAR(100)',
-    allowNull: false,
-    unique: true,
-  },
-  password: {
-    type: 'VARCHAR(255)',
-    allowNull: false,
-  },
-  email: {
-    type: 'VARCHAR(100)',
-    allowNull: false,
-    unique: true,
-  },
-  level: {
-    type: 'VARCHAR(50)',
-    allowNull: false,
-  },
-  university: {
-    type: 'VARCHAR(255)',
-    allowNull: false,
-  },
-  college: {
-    type: 'VARCHAR(255)',
-    allowNull: false,
-  },
-  department: {
-    type: 'VARCHAR(255)',
-    allowNull: false,
-  },
-  program: {
-    type: 'VARCHAR(255)',
-    allowNull: false,
-  },
-  perm: {
-    type: 'VARCHAR(255)',
-    allowNull: true, // Assuming it's optional
-  },
+// Add User
+const addUser = async (data) => {
+  const { username, password, email, level, university, college, department, program, perm } = data;
+  const [result] = await db.promise().query(
+    `INSERT INTO users (username, password, email, level, university, college, department, program, perm)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [username, password, email, level, university, college, department, program, perm]
+  );
+  return result;
 };
 
-module.exports = userModel;
+// Delete User
+const deleteUser = async (id) => {
+  const [result] = await db.promise().query(
+    `DELETE FROM users WHERE id = ?`,
+    [id]
+  );
+  return result;
+};
+
+// Update User
+const updateUser = async (id, data) => {
+  const { username, password, email, level, university, college, department, program, perm } = data;
+  const [result] = await db.promise().query(
+    `UPDATE users 
+     SET username = ?, password = ?, email = ?, level = ?, university = ?, college = ?, department = ?, program = ?, perm = ?
+     WHERE id = ?`,
+    [username, password, email, level, university, college, department, program, perm, id]
+  );
+  return result;
+};
+
+module.exports = {
+  addUser,
+  deleteUser,
+  updateUser,
+};
