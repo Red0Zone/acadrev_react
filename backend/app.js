@@ -8,6 +8,7 @@ const collagesRoutes = require('./routes/collagesRoutes'); // collages routes
 const departmentRoutes = require('./routes/departmentRoutes');
 const userRoutes = require('./routes/userRoutes');
 
+
 app.use(express.json()); // For parsing JSON request bodies
 
 // Mount the auth routes

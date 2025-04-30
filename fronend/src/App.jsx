@@ -26,7 +26,7 @@ function ProtectedRoute() {
   // Define heights for calculations (assuming h-16 for header)
   const headerHeight = "4rem"; // h-16
   const sidebarExpandedWidth = "256px"; // w-64
-  const sidebarCollapsedWidth = "64px"; // w-16
+  const sidebarCollapsedWidth = "0px"; // w-16
 
   const toggleSidebar = () => {
     setIsSidebarExpanded(!isSidebarExpanded);
@@ -58,8 +58,6 @@ function ProtectedRoute() {
           onLogout={() => logout()}
           userName={user?.name}
           userLevel={user?.level}
-          // Pass header height for Navbar internal calculation if needed, or adjust directly in Navbar.jsx
-          headerHeight={headerHeight}
         />
 
         {/* Main content area */}
