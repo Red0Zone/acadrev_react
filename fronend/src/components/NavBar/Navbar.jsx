@@ -1,36 +1,35 @@
 // src/components/Navbar.jsx
 "use client";
-import React from "react"; // Removed useState import
 import { motion, AnimatePresence } from "framer-motion";
+
+import { Link, useLocation } from "react-router-dom";
 import {
   Home,
-  Settings,
-  Bell,
-  User,
-  LogOut,
-  ChevronsLeft,
-  ChevronsRight,
-  University,
   Building2,
   Landmark,
   BookOpen,
-} from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+  Users,
+  BarChart3,
+  University,
+  ChevronRight,
+  LogOut,
+  ChevronLeft
+} from "lucide-react"
 
-// navItems remains the same
-const navItems = [
-  { id: 1, icon: <Home size={20} />, label: "Home", to: "/" },
-  { id: 2, icon: <University size={20} />, label: "University", to: "/university" },
-  { id: 3, icon: <Building2 size={20} />, label: "College", to: "/college" },
-  { id: 3, icon: <Landmark size={20} />, label: "Department", to: "/department  " },
-  { id: 3, icon: <BookOpen size={20} />, label: "Program", to: "/program" },
-  { id: 4, icon: <Bell size={20} />, label: "Notifications", to: "/notifications" },
-  { id: 5, icon: <Settings size={20} />, label: "Settings", to: "/settings" },
+// Icons used in dashboard/IconGrid
+const NAV_ITEMS = [
+  { path: "/main", icon: <Home size={20} />, label: "Dashboard" },
+  { path: "/university", icon: <University size={20} />, label: "Universities" },
+  { path: "/college", icon: <Building2 size={20} />, label: "Colleges" },
+  { path: "/departments", icon: <Landmark size={20} />, label: "Departments" },
+  { path: "/programs", icon: <BookOpen size={20} />, label: "Programs" },
+  { path: "/users", icon: <Users size={20} />, label: "Users" },
+  { path: "/reports", icon: <BarChart3 size={20} />, label: "Reports" }
 ];
 
 // Animation variants remain the same
 const sidebarVariants = {
-  expanded: { width: "256px" },
+  expanded: { width: "210px" },
   collapsed: { width: "64px" },
 };
 
@@ -39,12 +38,36 @@ const textVariants = {
   collapsed: { opacity: 0, display: "none" },
 };
 
-// Accept isExpanded and toggleSidebar as props
-function Navbar({ isExpanded, toggleSidebar, onLogout, userName, userLevel }) {
-  // Removed internal state: const [isExpanded, setIsExpanded] = useState(true);
-  const location = useLocation();
+// More refined text animation variants for logout button
+const logoutTextVariants = {
+  initial: { 
+    opacity: 0, 
+    width: 0,
+    display: "none" 
+  },
+  animate: { 
+    opacity: 1, 
+    width: "auto",
+    display: "inline-block",
+    transition: { 
+      opacity: { delay: 0.2, duration: 0.2 }, 
+      width: { delay: 0.2, duration: 0.2 }
+    }
+  },
+  exit: { 
+    opacity: 0, 
+    width: 0,
+    transition: { 
+      opacity: { duration: 0.1 }, 
+      width: { delay: 0.1, duration: 0.2 }
+    },
+    transitionEnd: { display: "none" }
+  }
+};
 
-  // Removed internal toggle function: const toggleSidebar = () => setIsExpanded(!isExpanded);
+// Accept isExpanded and toggleSidebar as props
+function Navbar({ isExpanded, toggleSidebar, onLogout }) {
+  const location = useLocation();
 
   return (
     <motion.aside
@@ -59,22 +82,21 @@ function Navbar({ isExpanded, toggleSidebar, onLogout, userName, userLevel }) {
        
         <button
           onClick={toggleSidebar} // Use prop function
-          className="p-1 rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800 ml-auto "
+          className="p-1 rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800 ml-auto"
           title={isExpanded ? "Collapse Sidebar" : "Expand Sidebar"} // Use prop
         >
-          {isExpanded ? <ChevronsLeft size={20} /> : <ChevronsRight size={20} />} {/* Use prop */}
+          {isExpanded ? <ChevronLeft size={20} /> : <ChevronRight size={20} />} {/* Use prop */}
         </button>
       </div>
 
       {/* Navigation Links */}
       <nav className="flex-grow px-2 py-4 space-y-1 overflow-y-auto">
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.to || (item.to !== "/" && location.pathname.startsWith(item.to));
+        {NAV_ITEMS.map((item) => {
+          const isActive = location.pathname === item.path || (item.path !== "/" && location.pathname.startsWith(item.path));
           return (
             <Link
-              key={item.id}
-              to={item.to}
-              title={!isExpanded ? item.label : undefined} // Show tooltip when collapsed
+              key={item.path}
+              to={item.path}
               className={`
                 flex items-center p-2 rounded-md transition-colors duration-150 ease-in-out
                 ${isActive
@@ -89,7 +111,7 @@ function Navbar({ isExpanded, toggleSidebar, onLogout, userName, userLevel }) {
               <AnimatePresence>
                 {isExpanded && ( // Use prop
                   <motion.span
-                    key={`text-${item.id}`}
+                    key={`text-${item.path}`}
                     variants={textVariants}
                     initial="collapsed"
                     animate="expanded"
@@ -106,60 +128,31 @@ function Navbar({ isExpanded, toggleSidebar, onLogout, userName, userLevel }) {
         })}
       </nav>
 
-      {/* User Info and Logout */}
-      <div className="border-t border-gray-200 p-2 mt-auto">
-        <div className={`flex items-center p-2 rounded-md ${isExpanded ? 'justify-start' : 'justify-center'}`}>
-          <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center border border-indigo-200">
-            <User size={18} className="text-indigo-600" />
-          </div>
-          <AnimatePresence>
-            {isExpanded && ( // Use prop
-              <motion.div
-                key="user-info"
-                variants={textVariants}
-                initial="collapsed"
-                animate="expanded"
-                exit="collapsed"
-                transition={{ duration: 0.2, delay: 0.1 }}
-                className="ml-3 overflow-hidden"
+      {/* Logout button at bottom */}
+      <div className="mt-auto border-t border-gray-200 px-3 py-3">
+        <button
+          onClick={onLogout}
+          className="flex items-center px-3 py-2 w-full rounded-lg text-gray-600 hover:bg-gray-100"
+        >
+          <span className="inline-flex justify-center items-center text-red-500">
+            <LogOut size={20} />
+          </span>
+          
+          <AnimatePresence mode="wait">
+            {isExpanded && (
+              <motion.span
+                key="logout-text"
+                variants={logoutTextVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="ml-3 font-medium whitespace-nowrap overflow-hidden"
               >
-                <p className="text-sm font-medium text-gray-800 truncate">{userName || "User"}</p>
-                <p className="text-xs text-gray-500 truncate">{userLevel || "Level"}</p>
-              </motion.div>
+                Sign out
+              </motion.span>
             )}
           </AnimatePresence>
-          {onLogout && (
-             <AnimatePresence>
-               {isExpanded && ( // Use prop
-                 <motion.button
-                   key="logout-button"
-                   variants={textVariants}
-                   initial="collapsed"
-                   animate="expanded"
-                   exit="collapsed"
-                   transition={{ duration: 0.2, delay: 0.1 }}
-                   whileHover={{ scale: 1.05 }}
-                   whileTap={{ scale: 0.95 }}
-                   onClick={onLogout}
-                   className="ml-auto p-1 rounded text-gray-500 hover:bg-red-100 hover:text-red-600"
-                   title="Logout"
-                 >
-                   <LogOut size={18} />
-                 </motion.button>
-               )}
-             </AnimatePresence>
-          )}
-        </div>
-         {/* Collapsed Logout Button */}
-         {!isExpanded && onLogout && ( // Use prop
-            <button
-              onClick={onLogout}
-              className="w-full mt-1 p-2 rounded text-gray-500 hover:bg-red-100 hover:text-red-600 flex justify-center"
-              title="Logout"
-            >
-              <LogOut size={18} />
-            </button>
-          )}
+        </button>
       </div>
     </motion.aside>
   );

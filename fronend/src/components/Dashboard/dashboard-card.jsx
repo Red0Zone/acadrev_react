@@ -2,9 +2,9 @@
 
 import { motion } from "framer-motion"
 import { Link } from "react-router-dom"   
+import { ArrowRight } from "lucide-react";
 
-
-export function DashboardCard({ icon, title, subtitle }) {
+export function DashboardCard({ icon, title, subtitle, color = "from-blue-500 to-blue-700", stats, description, isActive }) {
 
   
   return (
@@ -14,70 +14,45 @@ export function DashboardCard({ icon, title, subtitle }) {
       className="h-full"
     >
       <Link to={`/${title.toLowerCase()}`} className="block h-full">
-        <div
-          className="
-            relative
-            rounded-xl
-            h-full
-            transition-all duration-300
-            backdrop-blur-sm
-            border
-            shadow-lg hover:shadow-xl
-            p-6
-            flex flex-col items-center
-            text-center
-            group
-            bg-white/80 border-gray-200/50 text-gray-800
-          "
-        >
-          {/* Icon container with animation */}
-          <div 
-            className="
-              relative mb-4 p-4 
-              border
-              rounded-full 
-              transition-all duration-300 
-              group-hover:scale-110
-              flex items-center justify-center
-              bg-gray-50 border-gray-200
-            "
-          >
-            <div 
-              className="w-10 h-10 flex items-center justify-center"
-            >
-              {icon}
+        <div className="relative flex flex-col h-full overflow-hidden rounded-xl shadow-md bg-white transition-all duration-300 hover:shadow-xl border border-gray-100">
+          {/* Gradient Header */}
+          <div className={`w-full h-2 bg-gradient-to-r ${color}`}></div>
+          
+          <div className="flex flex-col h-full p-6">
+            {/* Icon and Title */}
+            <div className="flex items-start justify-between mb-4">
+              <div className={`p-3 rounded-lg bg-gradient-to-br ${color} text-white`}>
+                {icon}
+              </div>
+              <div className="text-right">
+                <h3 className="font-semibold text-lg text-gray-800">{title}</h3>
+                <p className="text-sm text-gray-500">{subtitle}</p>
+              </div>
+            </div>
+            
+            {/* Description */}
+            <p className="text-gray-600 text-sm mb-4 flex-grow">{description}</p>
+            
+            {/* Stats and Action */}
+            <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
+              {stats && (
+                <div>
+                  <span className="text-xl font-bold text-gray-800">{stats.count}</span>
+                  <span className="text-sm text-gray-500 ml-1">{stats.label}</span>
+                </div>
+              )}
+              
+              <motion.button 
+                className={`flex items-center justify-center rounded-full p-2 transition-colors duration-300 ${isActive ? 'bg-gradient-to-r ' + color + ' text-white' : 'bg-gray-100 text-gray-600'}`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <ArrowRight className="w-4 h-4" />
+              </motion.button>
             </div>
           </div>
-
-          {/* Title with modern typography */}
-          <h3 
-            className="
-              text-base font-semibold mb-1
-              text-gray-800
-            "
-          >
-            {title}
-          </h3>
-
-          {/* Subtitle with improved styling */}
-          <p className="
-            text-sm
-            text-gray-600
-          ">
-            {subtitle}
-          </p>
-
-          {/* Hover effect overlay */}
-          <div 
-            className="
-              absolute inset-0 rounded-xl
-              opacity-0 group-hover:opacity-100
-              transition-opacity duration-300
-               border-black/30 border-2
-            "
-          />
         </div>
       </Link>
     </motion.div>
   )
-} 
+}

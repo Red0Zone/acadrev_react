@@ -5,26 +5,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
 import "./Login.css";
 
-const UserIcon = (props) => (
-    <svg
-       xmlns="http://www.w3.org/2000/svg"
-       fill="none"
-       viewBox="0 0 24 24"
-       strokeWidth={1.5}
-       stroke="currentColor"
-       {...props}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"
-      />
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-      />
-    </svg>
+// Modern academic logo
+const AcademicLogo = (props) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" 
+    strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+    <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5" />
+  </svg>
 );
 
 // SVG Icons for Password Visibility
@@ -62,40 +49,53 @@ const EyeSlashIcon = ({ className }) => (
   </svg>
 );
 
+// Shield icon for security message
+const ShieldIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+    <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+  </svg>
+);
+
+// Loading spinner component
+const LoadingSpinner = () => (
+  <div className="spinner-container">
+    <div className="spinner"></div>
+  </div>
+);
+
 function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigate();
   const auth = useAuth();
-
-  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
+    
     if (!username || !password) {
       setError("Please enter both username and password");
       return;
     }
 
     try {
-      
+      setIsLoading(true);
       console.log("Login attempt with:", { username, password });
-      const loginResponse = await auth.login({username,password});
-      if(loginResponse.success){
+      const loginResponse = await auth.login({username, password});
+      if (loginResponse.success) {
         console.log(`this is loginresponse: ${loginResponse.success}`)
         navigation("/main");
-
       }
-      else{
+      else {
         setError(loginResponse.error);
+        setIsLoading(false);
       }
-      
     } catch (err) {
       setError(err.message || "An error occurred during login");
+      setIsLoading(false);
     }
   };
 
@@ -104,86 +104,171 @@ function LoginPage() {
   };
 
   return (
-    <div className="login-container">
-      <main className="login-content">
-        <div className="login-form-container">
-          <div className="text-center mb-8">
-            {/* Using the modern UserIcon component */}
-            <UserIcon className="w-12 h-12 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Log in to your account</h2>
-            <p className="text-medium">
-              Enter your credentials to access your account
-            </p>
+    <div className="login-page-background min-h-screen flex items-center justify-center p-4 animate-fade-in">
+      <div className="flex w-full max-w-6xl overflow-hidden rounded-lg shadow-2xl bg-opacity-95 backdrop-blur-sm">
+        {/* Left side - darknavy background */}
+        <div className="hidden md:flex md:w-2/5 bg-darknavy text-white flex-col justify-between p-8 relative overflow-hidden">
+          {/* Abstract gradient shapes */}
+          <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+            <div className="absolute top-0 right-0 w-72 h-72 rounded-full bg-gradient-to-b from-teal-400 to-transparent opacity-10 blur-2xl transform translate-x-1/4 -translate-y-1/4"></div>
+            <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full bg-gradient-to-t from-blue-500 to-transparent opacity-10 blur-2xl transform -translate-x-1/3 translate-y-1/4"></div>
           </div>
-
-          {error && (
-            <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <label htmlFor="username" className="block text-sm font-medium">
-                Username
-              </label>
-              <input
-                id="username"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="Enter your username"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label htmlFor="password" className="block text-sm font-medium">
-                  Password
-                </label>
-                <a
-                  href="#forgot-password"
-                  className="text-sm text-primary hover:text-primary-hover hover:underline"
-                >
-                  Forgot Password?
-                </a>
+          
+          <div className="flex flex-col space-y-6 relative z-10">
+            <h1 className="text-2xl font-bold">Access Your Institution's Portal</h1>
+            <p className="text-sm text-gray-300">
+              Log in to access your institution's academic review portal. All data is 
+              encrypted and securely stored following industry best practices.
+            </p>
+            <div className="space-y-5 mt-8">
+              <div className="flex items-center space-x-3 text-sm animate-slide-in" style={{ animationDelay: "0.1s" }}>
+                <svg className="h-5 w-5 text-teal-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>Secure institutional authentication</span>
               </div>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                  placeholder="Enter your password"
-                  required
-                />
+              <div className="flex items-center space-x-3 text-sm animate-slide-in" style={{ animationDelay: "0.2s" }}>
+                <svg className="h-5 w-5 text-teal-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>Real-time updates and notifications</span>
+              </div>
+              <div className="flex items-center space-x-3 text-sm animate-slide-in" style={{ animationDelay: "0.3s" }}>
+                <svg className="h-5 w-5 text-teal-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+                <span>Comprehensive data analytics</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="mt-auto text-xs text-gray-300 relative z-10">
+            <p>Need assistance? Contact your institution's IT department or email</p>
+            <a href="mailto:support@acadrev.edu" className="text-teal-400 hover:underline">
+              support@acadrev.edu
+            </a>
+          </div>
+        </div>
+
+        {/* Right side - login form */}
+        <div className="w-full md:w-3/5 bg-white p-8 relative">
+          {/* Subtle gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-white opacity-70"></div>
+          
+          <div className="max-w-md mx-auto relative z-10">
+            <div className="text-center mb-8">
+              <div className="flex justify-center items-center mb-4">
+                <div className="relative">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-teal-400 to-blue-500 rounded-full opacity-30 blur-sm"></div>
+                  <div className="relative bg-white rounded-full p-3">
+                    <AcademicLogo className="h-12 w-12 text-darknavy" />
+                  </div>
+                </div>
+              </div>
+              <h2 className="text-2xl font-semibold text-gray-800 bg-clip-text text-transparent bg-gradient-to-r from-darknavy to-blue-600">Log in to your account</h2>
+              <p className="text-gray-600 text-sm mt-2">
+                Access the academic review portal with your institutional credentials
+              </p>
+            </div>
+
+            {error && (
+              <div className="p-4 mb-6 text-sm text-red-600 bg-red-50 rounded-md border border-red-200 flex items-start animate-fade-in">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                <span>{error}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-1">
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+                  Username
+                </label>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 group-hover:text-darknavy transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                  <input
+                    id="username"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="pl-10 w-full py-3 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-darknavy focus:border-transparent transition-colors bg-white bg-opacity-80 backdrop-blur-sm"
+                    placeholder="Enter your username"
+                    required
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex justify-between">
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                    Password
+                  </label>
+                </div>
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400 group-hover:text-darknavy transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10 w-full py-3 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-darknavy focus:border-transparent transition-colors bg-white bg-opacity-80 backdrop-blur-sm"
+                    placeholder="Enter your password"
+                    required
+                    disabled={isLoading}
+                  />
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+                    onClick={togglePasswordVisibility}
+                    disabled={isLoading}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? (
+                      <EyeIcon className="h-5 w-5" />
+                    ) : (
+                      <EyeSlashIcon className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div>
                 <button
-                  type="button"
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-light hover:text-dark"
-                  onClick={togglePasswordVisibility}
+                  type="submit"
+                  className="w-full py-3 px-4 rounded-lg focus:outline-none relative transition-all shadow-md hover:shadow-lg bg-gradient-to-r from-darknavy to-blue-700 hover:from-darknavy hover:to-blue-600 text-white transform hover:-translate-y-0.5 active:translate-y-0"
+                  disabled={isLoading}
                 >
-                  {showPassword ? (
-                    <EyeIcon className="h-5 w-5" />
+                  {isLoading ? (
+                    <>
+                      <span className="opacity-0">Sign in</span>
+                      <LoadingSpinner />
+                    </>
                   ) : (
-                    <EyeSlashIcon className="h-5 w-5" />
+                    "Sign in"
                   )}
                 </button>
               </div>
+            </form>
+            
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <div className="flex items-center justify-center text-sm text-gray-500 space-x-2">
+                <ShieldIcon />
+                <span>Secure institutional login</span>
+              </div>
             </div>
-
-            <button
-              type="submit"
-              className="w-full py-2 px-4 rounded-md font-medium transition-colors duration-200 bg-primary hover:bg-primary-hover text-white"
-            >
-              Log in
-            </button>
-          </form>
+          </div>
         </div>
-      </main>
-
+      </div>
     </div>
   );
 }

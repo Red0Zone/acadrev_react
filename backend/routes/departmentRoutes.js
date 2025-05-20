@@ -3,20 +3,36 @@ const router = express.Router();
 const departmentController = require('../controllers/departmentController');
 const { authenticateToken, authorizeRole } = require('../middlewares/authMiddleware');
 
+// ➕ الكلية تضيف قسم
+router.post(
+  '/add',
+  authenticateToken,
+  authorizeRole(['college']),
+  departmentController.addDepartment
+);
 
-// Add Department (Admins only)
-router.post('/add/:collageId', authenticateToken, authorizeRole(['admin']), departmentController.addDepartment);
+// 📋 عرض كل الأقسام (لـ الجميع ما عدا القسم نفسه)
+router.get(
+  '/all',
+  authenticateToken,
+  authorizeRole(['admin', 'authority', 'university', 'college']),
+  departmentController.getAllDepartments
+);
 
-// Delete Department (Admins only)
-router.delete('/delete/:id', authenticateToken, authorizeRole(['admin']), departmentController.deleteDepartment);
+// 👁️ القسم يعرض بياناته فقط
+router.get(
+  '/me',
+  authenticateToken,
+  authorizeRole(['department']),
+  departmentController.getMyDepartment
+);
 
-// View Department (Public)
-router.get('/view/:id', departmentController.getDepartmentById);
-
-// Search Departments (any logged-in user)
-router.get('/search', authenticateToken, departmentController.searchDepartmentsByName);
-
-// Update Department (Admins only)
-router.put('/update/:id', authenticateToken, authorizeRole(['admin']), departmentController.updateDepartment);
+// ✏️ القسم يعدل بياناته
+router.put(
+  '/update',
+  authenticateToken, 
+  authorizeRole(['department']),
+  departmentController.updateDepartment
+);
 
 module.exports = router;

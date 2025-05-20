@@ -1,103 +1,83 @@
+const bcrypt = require('bcrypt');
 const departmentModel = require('../models/departmentModel');
+const userModel = require('../models/userModel');
 
-// Add Department
+// 1. الكلية تنشئ القسم + مستخدم مرتبط
 const addDepartment = async (req, res) => {
-  const { name, head, website } = req.body;
-  const collageId = req.params.collageId;
-
-  if (!name || !collageId) {
-    return res.status(400).json({ message: 'Name and Collage ID are required' });
-  }
+  const { name, username,email, password } = req.body;
+  const college_id = req.user.college_id;
 
   try {
-    const result = await departmentModel.addDepartment({ name, head, website, collageId });
-    res.status(201).json({ message: 'Department added successfully', departmentId: result.insertId });
-  } catch (error) {
-    console.error('Error adding department:', error);
-    res.status(500).json({ message: 'Database error', error });
+    const departmentId = await departmentModel.createDepartment({
+      name,
+      email: null,
+      website: null,
+      address: null,
+      logo: null,
+      college_id,
+      head_name: null // ✅ يبدأ كـ null
+    });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await userModel.createUser({
+      username,
+      email,
+      password: hashedPassword,
+      role: 'department',
+      authority_id: null,
+      university_id: null,
+      college_id,
+      department_id: departmentId
+    });
+
+    res.status(201).json({ message: 'Department and user created successfully', departmentId });
+  } catch (err) {
+    res.status(500).json({ message: 'Error creating department', error: err });
   }
 };
 
-// Delete Department
-const deleteDepartment = async (req, res) => {
-  const departmentId = req.params.id;
-
+// 2. عرض كل الأقسام
+const getAllDepartments = async (req, res) => {
   try {
-    const result = await departmentModel.deleteDepartment(departmentId);
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Department not found' });
-    }
-
-    res.status(200).json({ message: 'Department deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting department:', error);
-    res.status(500).json({ message: 'Database error', error });
+    const departments = await departmentModel.getAllDepartments();
+    res.status(200).json(departments);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching departments', error: err });
   }
 };
 
-// View Department
-const getDepartmentById = async (req, res) => {
-  const departmentId = req.params.id;
+// 3. عرض قسم حالي (من قبل المسؤول)
+const getMyDepartment = async (req, res) => {
+  const id = req.user.department_id;
 
   try {
-    const rows = await departmentModel.getDepartmentById(departmentId);
-
-    if (rows.length === 0) {
-      return res.status(404).json({ message: 'Department not found' });
-    }
-
-    res.status(200).json(rows[0]);
-  } catch (error) {
-    console.error('Error fetching department:', error);
-    res.status(500).json({ message: 'Database error', error });
+    const dept = await departmentModel.getDepartmentById(id);
+    res.status(200).json(dept);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching department', error: err });
   }
 };
 
-// Search Departments
-const searchDepartmentsByName = async (req, res) => {
-  const { name } = req.query;
-
-  if (!name) {
-    return res.status(400).json({ message: 'Name query parameter is required' });
-  }
-
-  try {
-    const rows = await departmentModel.searchDepartmentsByName(name);
-    res.status(200).json(rows);
-  } catch (error) {
-    console.error('Error searching departments:', error);
-    res.status(500).json({ message: 'Database error', error });
-  }
-};
-
-// Update Department
+// 4. تعديل بيانات القسم
 const updateDepartment = async (req, res) => {
-  const departmentId = req.params.id;
-  const { name, head, website, collageId } = req.body;
+  const id = req.user.department_id;
 
-  if (!name || !collageId) {
-    return res.status(400).json({ message: 'Name and Collage ID are required' });
+  if ('name' in req.body) {
+    return res.status(403).json({ message: 'Name is not editable' });
   }
 
   try {
-    const result = await departmentModel.updateDepartment(departmentId, { name, head, website, collageId });
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'Department not found' });
-    }
-
-    res.status(200).json({ message: 'Department updated successfully' });
-  } catch (error) {
-    console.error('Error updating department:', error);
-    res.status(500).json({ message: 'Database error', error });
+    const result = await departmentModel.updateDepartment(id, req.body);
+    res.status(200).json({ message: 'Department updated', result });
+  } catch (err) {
+    res.status(500).json({ message: 'Error updating department', error: err });
   }
 };
 
 module.exports = {
   addDepartment,
-  deleteDepartment,
-  getDepartmentById,
-  searchDepartmentsByName,
-  updateDepartment,
+  getAllDepartments,
+  getMyDepartment,
+  updateDepartment
 };

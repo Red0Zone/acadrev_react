@@ -1,103 +1,89 @@
+const bcrypt = require('bcrypt');
 const universityModel = require('../models/universityModel');
+const userModel = require('../models/userModel');
 
-// Add University
+// 1. إنشاء جامعة وحساب مستخدم لها (من قبل هيئة الاعتماد)
 const addUniversity = async (req, res) => {
-  const data = req.body;
-
-  if (!data.name || !data.country || !data.email) {
-    return res.status(400).json({ message: 'Name, country, and email are required fields.' });
-  }
+  const { name, username,email, password } = req.body;
+  const authority_id = req.user.authority_id;
 
   try {
-    const result = await universityModel.addUniversity(data);
-    res.status(201).json({ message: 'University added successfully', universityId: result.insertId });
-  } catch (error) {
-    console.error('Error adding university:', error);
-    res.status(500).json({ message: 'Database error', error });
+    const universityId = await universityModel.createUniversity({
+      name,
+      email: null,
+      website: null,
+      address: null,
+      logo: null,
+      authority_id,
+      head_name: null,
+      phone: null,
+      tax: null
+    });
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await userModel.createUser({
+      username,
+      email,
+      password: hashedPassword,
+      role: 'university',
+      authority_id,
+      university_id: universityId,
+      college_id: null,
+      department_id: null
+    });
+
+    res.status(201).json({
+      message: 'University created. Waiting for university to complete its information.',
+      universityId
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Error creating university', error: err });
   }
 };
 
-// Delete University
-const deleteUniversity = async (req, res) => {
-  const id = req.params.id;
 
-  try {
-    const result = await universityModel.deleteUniversity(id);
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'University not found' });
-    }
-    res.status(200).json({ message: 'University deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting university:', error);
-    res.status(500).json({ message: 'Database error', error });
-  }
-};
-
-// Get University by ID
-const getUniversityById = async (req, res) => {
-  const id = req.params.id;
-
-  try {
-    const rows = await universityModel.getUniversityById(id);
-    if (rows.length === 0) {
-      return res.status(404).json({ message: 'University not found' });
-    }
-    res.status(200).json(rows[0]);
-  } catch (error) {
-    console.error('Error retrieving university:', error);
-    res.status(500).json({ message: 'Database error', error });
-  }
-};
-
-// Search Universities
-const searchUniversitiesByName = async (req, res) => {
-  const { name } = req.query;
-  if (!name) {
-    return res.status(400).json({ message: 'Name query parameter is required' });
-  }
-
-  try {
-    const rows = await universityModel.searchUniversitiesByName(name);
-    res.status(200).json(rows);
-  } catch (error) {
-    console.error('Error searching universities:', error);
-    res.status(500).json({ message: 'Database error', error });
-  }
-};
-
-// Update University
-const updateUniversity = async (req, res) => {
-  const id = req.params.id;
-  const data = req.body;
-
-  try {
-    const result = await universityModel.updateUniversity(id, data);
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ message: 'University not found' });
-    }
-    res.status(200).json({ message: 'University updated successfully' });
-  } catch (error) {
-    console.error('Error updating university:', error);
-    res.status(500).json({ message: 'Database error', error });
-  }
-};
-
+// 2. عرض كل الجامعات (لـ هيئة الاعتماد أو الأدمن)
 const getAllUniversities = async (req, res) => {
   try {
-    const rows = await universityModel.getAllUniversities();
-    res.status(200).json(rows);
-  } catch (error) {
-    console.error('Error fetching all universities:', error);
-    res.status(500).json({ message: 'Database error', error });
+    const universities = await universityModel.getAllUniversities();
+    res.status(200).json(universities);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching universities', error: err });
   }
 };
 
+// 3. عرض جامعة واحدة (عرض ذاتي)
+const getMyUniversity = async (req, res) => {
+  const id = req.user.university_id;
+
+  try {
+    const uni = await universityModel.getUniversityById(id);
+    res.status(200).json(uni);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching university', error: err });
+  }
+};
+
+// 4. تحديث بيانات الجامعة (من قبل الجامعة نفسها)
+const updateUniversity = async (req, res) => {
+  const id = req.user.university_id;
+
+  if ('name' in req.body) {
+    return res.status(403).json({ message: 'Name is not editable' });
+  }
+
+  try {
+    const result = await universityModel.updateUniversity(id, req.body);
+    res.status(200).json({ message: 'University updated', result });
+  } catch (err) {
+    res.status(500).json({ message: 'Error updating university', error: err });
+  }
+};
 
 module.exports = {
   addUniversity,
-  deleteUniversity,
-  getUniversityById,
-  searchUniversitiesByName,
-  updateUniversity,
   getAllUniversities,
+  getMyUniversity,
+  updateUniversity
 };

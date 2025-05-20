@@ -1,6 +1,7 @@
 // src/context/AuthContext.jsx
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
+
 // 1. Create the Context
 const AuthContext = createContext(null);
 
@@ -20,6 +21,18 @@ const API_CONFIG = {
     // LOGOUT: '/auth/logout',
   },
 };
+
+// Roles dictionary
+const roles = {
+  ADMIN: 'admin',
+  AUTHORITY: 'authority',
+  UNIVERSITY: 'university',
+  COLLEGE: 'college',
+  DEPARTMENT: 'department'
+};
+
+
+
 
 // 2. Create the Provider Component
 export const AuthProvider = ({ children }) => {
@@ -75,6 +88,7 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json();
       const userData = data.user;
       const token = data.token;
+     
     
 
       if (userData) {
@@ -118,6 +132,17 @@ export const AuthProvider = ({ children }) => {
     // You might want to redirect the user to the login page here
   };
 
+  
+ useEffect(() => {
+    if (isLoading) {
+      document.title = "Loading... ";
+    } else if (user) {
+      document.title = `${user.role} `;
+    } else {
+      document.title = " Login";
+    }
+  }, [user, isLoading]); // Dependency array ensures this runs when these values change
+
   // The value provided to consuming components
   const value = {
     user,
@@ -126,6 +151,7 @@ export const AuthProvider = ({ children }) => {
     error, // Provide error state
     login,
     logout,
+    roles, // Include the roles dictionary
   };
 
   // Render children (consider showing a loading indicator during initial load)

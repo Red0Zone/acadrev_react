@@ -3,6 +3,8 @@
   --color-primary: var(--primary-color);
   --color-hover: var(--primary-hover);
   --color-secondary: var(--secondary-color);
+  --color-darknavy: var(--darknavy-color);
+
   
   --text-main: var(--text-main);
   --text-dark: var(--text-dark);
@@ -27,6 +29,8 @@
   --primary-color: #3b82f6;
   --primary-hover: #2563eb;
   --secondary-color: #6c757d;
+  --darknavy-color: #1F2857;
+
   
   /* Background Colors */
   --bg-main: #f8f9fa;
@@ -42,6 +46,7 @@
   --text-light: #9ca3af;
   --text-primary: #3b82f6;
   --text-primary-hover: #2563eb;
+  
   
   /* Border Colors */
   --border-main: #d1d5db;

@@ -1,20 +1,20 @@
-import React, { useState, useMemo } from 'react';
-// Make sure the path is correct for your project structure
-import { universities, colleges as allColleges } from './collegeData';
+import React, { useState, useMemo, useEffect } from 'react';
+// TODO: If universities data is dynamic, fetch it instead of importing statically.
+// import { universities } from './collegeData'; // Kept for university list/filtering // REMOVED
+import { fetchColleges, editCollege, fetchUniversities } from './functions'; // Import API functions
 
 // --- Helper Components ---
 
 // Updated CollegeCard to display University Code
-const CollegeCard = ({ college, universityCode, onClick }) => ( // Added universityCode prop
+const CollegeCard = ({ college, universityCode, onClick }) => (
   <div
     className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl cursor-pointer transition-all duration-300 ease-in-out hover:-translate-y-1 group border border-gray-100"
     onClick={() => onClick(college)}
   >
     <div className="h-2 bg-primary w-full group-hover:bg-primary-dark transition-colors duration-300"></div>
     <div className="p-5">
-      <div className="flex justify-between items-start mb-2"> {/* Adjusted layout for code */}
+      <div className="flex justify-between items-start mb-2">
         <h3 className="text-primary-dark font-semibold text-lg group-hover:text-primary transition-colors duration-300 flex-1 mr-2">{college.name}</h3>
-        {/* Display University Code */}
         {universityCode && (
           <span className="text-xs font-mono px-2 py-0.5 bg-secondary/10 text-secondary rounded-md whitespace-nowrap">
             {universityCode}
@@ -29,14 +29,14 @@ const CollegeCard = ({ college, universityCode, onClick }) => ( // Added univers
   </div>
 );
 
-
-// --- CollegePopup Component (remains the same as your previous version) ---
+// --- CollegePopup Component (remains largely the same, onUpdate will trigger API call) ---
 function CollegePopup({ college, onClose, onUpdate }) {
   const [editedCollege, setEditedCollege] = useState({
     name: college.name,
     dean: college.dean || '',
     established: college.established,
     description: college.description,
+    // universityId: college.universityId, // Ensure universityId is part of the college object if needed for update
   });
   const [departments, setDepartments] = useState(college.departments || []);
   const [newDepartment, setNewDepartment] = useState('');
@@ -65,14 +65,14 @@ function CollegePopup({ college, onClose, onUpdate }) {
     }
   };
 
-  const handleUpdate = () => {
-    const updatedCollege = {
-      ...college,
-      ...editedCollege,
+  const handleUpdate = async () => {
+    const updatedCollegeData = {
+      ...college, // original college data (like id, universityId)
+      ...editedCollege, // edited fields
       departments: departments,
     };
     if (onUpdate) {
-      onUpdate(updatedCollege);
+      await onUpdate(updatedCollegeData); // onUpdate now handles the API call
     }
     onClose();
   };
@@ -98,8 +98,7 @@ function CollegePopup({ college, onClose, onUpdate }) {
         </button>
         <h2 className="mt-3 text-primary mb-6 text-2xl font-bold">{college.name}</h2>
         <form onSubmit={(e) => { e.preventDefault(); handleUpdate(); }} className="space-y-5">
-          {/* Form fields remain the same */}
-           <div>
+          <div>
             <label className="block text-sm font-medium text-gray-700">College Name</label>
             <input
               type="text"
@@ -139,7 +138,6 @@ function CollegePopup({ college, onClose, onUpdate }) {
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-primary focus:border-primary sm:text-sm"
             />
           </div>
-          {/* Tag-based Departments UI */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Departments</label>
             <div className="flex flex-wrap gap-2 mb-3">
@@ -205,73 +203,106 @@ function CollegePopup({ college, onClose, onUpdate }) {
   );
 }
 
-
 // --- Main College Component ---
-
 const College = () => {
-  const [selectedUniversityId, setSelectedUniversityId] = useState(universities[0]?.id || null);
+  // TODO: Replace with actual role from auth context/state
+  const [userRole, setUserRole] = useState('admin'); // 'admin', 'authority', or other roles like 'user', 'guest'
+  
+  const [universitiesList, setUniversitiesList] = useState([]);
+  const [universitiesLoading, setUniversitiesLoading] = useState(true);
+  const [universitiesError, setUniversitiesError] = useState(null);
+  const [selectedUniversityId, setSelectedUniversityId] = useState(null); // Initialize to null
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCollege, setSelectedCollege] = useState(null);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [currentColleges, setCurrentColleges] = useState(allColleges);
+  
+  const [currentColleges, setCurrentColleges] = useState([]);
+  const [loading, setLoading] = useState(true); // For colleges
+  const [error, setError] = useState(null); // For colleges
 
-  // Create a map for quick university code lookup
+  // Fetch universities
+  useEffect(() => {
+    const loadUniversities = async () => {
+      if (userRole === 'admin' || userRole === 'authority') {
+        try {
+          setUniversitiesLoading(true);
+          setUniversitiesError(null);
+          const data = await fetchUniversities();
+          setUniversitiesList(data);
+          if (data.length > 0 && !selectedUniversityId) { // Set default selected university if not already set
+            // setSelectedUniversityId(data[0].id); // Optionally select the first one by default
+          }
+        } catch (err) {
+          setUniversitiesError(err.message || 'Failed to fetch universities.');
+          setUniversitiesList([]);
+        } finally {
+          setUniversitiesLoading(false);
+        }
+      } else {
+        setUniversitiesList([]);
+        setUniversitiesLoading(false);
+      }
+    };
+    loadUniversities();
+  }, [userRole]); // Re-fetch if userRole changes
+
+  // Fetch colleges
+  useEffect(() => {
+    const loadColleges = async () => {
+      if (userRole === 'admin' || userRole === 'authority') {
+        try {
+          setLoading(true);
+          setError(null);
+          const data = await fetchColleges();
+          setCurrentColleges(data);
+        } catch (err) {
+          setError(err.message || 'Failed to fetch colleges.');
+          setCurrentColleges([]);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setCurrentColleges([]);
+        setLoading(false);
+      }
+    };
+
+    loadColleges();
+  }, [userRole]);
+
   const universityCodeMap = useMemo(() => {
-    return universities.reduce((map, uni) => {
+    return universitiesList.reduce((map, uni) => {
       map[uni.id] = uni.code;
       return map;
     }, {});
-  }, []); // Runs only once
+  }, [universitiesList]);
 
-  // Memoized filtered colleges - UPDATED LOGIC FOR COMBINED FILTERING
   const filteredColleges = useMemo(() => {
     const lowerSearchTerm = searchTerm.toLowerCase().trim();
-
-    // Start with all colleges
     let results = [...currentColleges];
 
-    // 1. Filter by selected university (if one is selected)
     if (selectedUniversityId) {
       results = results.filter(college => college.universityId === selectedUniversityId);
     }
 
-    // 2. Filter by search term (if one exists)
     if (lowerSearchTerm) {
       results = results.filter(college =>
         college.name.toLowerCase().includes(lowerSearchTerm) ||
-        college.description.toLowerCase().includes(lowerSearchTerm) ||
+        (college.description && college.description.toLowerCase().includes(lowerSearchTerm)) ||
         (college.dean && college.dean.toLowerCase().includes(lowerSearchTerm))
-        // Optional: Search departments too
-        // || (college.departments && college.departments.some(dept => dept.toLowerCase().includes(lowerSearchTerm)))
       );
     }
-
-    // If no university is selected AND no search term, show nothing or all?
-    // Current logic: shows nothing if no university selected and no search term.
-    // If you want to show ALL colleges when nothing is selected/searched,
-    // you might adjust the initial state or add a condition here.
-    if (!selectedUniversityId && !lowerSearchTerm) {
-        // return []; // Option 1: Show nothing if no university selected initially
-        return currentColleges; // Option 2: Show ALL colleges initially (before selection/search)
-                                // Choose the behavior you prefer. Let's go with Option 1 for now.
-        return [];
-    }
-
-
     return results;
-  }, [selectedUniversityId, searchTerm, currentColleges]); // Dependencies
+  }, [selectedUniversityId, searchTerm, currentColleges]);
 
-  // Memoized university name
   const selectedUniversity = useMemo(() => {
-    return universities.find(uni => uni.id === selectedUniversityId);
-  }, [selectedUniversityId]);
+    return universitiesList.find(uni => uni.id === selectedUniversityId);
+  }, [selectedUniversityId, universitiesList]);
 
-  // Event Handlers
   const handleUniversitySelect = (universityId) => {
-    setSelectedUniversityId(universityId);
-    // Keep the search term when changing university if you want combined filtering
-    // setSearchTerm(''); // Uncomment this if you want search to clear on uni change
-    closePopup();
+    setSelectedUniversityId(universityId); // Can be null for "All Universities"
+    closePopup(); // Assuming this is for college popup, not university selection popup
   };
 
   const handleSearchChange = (event) => {
@@ -290,83 +321,109 @@ const College = () => {
     setSelectedCollege(null);
   };
 
-  const handleUpdateCollege = (updatedCollege) => {
-    setCurrentColleges(prevColleges =>
-      prevColleges.map(college =>
-        college.id === updatedCollege.id ? updatedCollege : college
-      )
-    );
-    console.log("Updated College Data (in state):", updatedCollege);
+  const handleUpdateCollege = async (updatedCollegeData) => {
+    try {
+      const savedCollege = await editCollege(updatedCollegeData);
+      setCurrentColleges(prevColleges =>
+        prevColleges.map(college =>
+          college.id === savedCollege.id ? savedCollege : college
+        )
+      );
+      // Optionally, show a success notification
+    } catch (err) {
+      console.error("Failed to update college:", err);
+      setError(`Failed to update college: ${err.message}`); // Show error to user
+    }
   };
-
-  // Determine the title and count message based on context
+  
   const pageTitle = selectedUniversity
     ? `${selectedUniversity.name} Colleges`
-    : 'All Colleges'; // Or 'Select a University'
+    : (userRole === 'admin' || userRole === 'authority') ? 'All Colleges' : 'Colleges';
 
   const countMessage = searchTerm.trim()
-    ? `${filteredColleges.length} ${filteredColleges.length === 1 ? 'Result' : 'Results'} Found ${selectedUniversity ? `in ${selectedUniversity.name}` : 'Across All Universities'}`
-    : `${filteredColleges.length} ${filteredColleges.length === 1 ? 'College' : 'Colleges'} ${selectedUniversity ? `in ${selectedUniversity.name}` : ''}`;
+    ? `${filteredColleges.length} ${filteredColleges.length === 1 ? 'Result' : 'Results'} Found ${selectedUniversity ? `in ${selectedUniversity.name}` : (userRole === 'admin' || userRole === 'authority') ? 'Across All Universities' : ''}`
+    : `${filteredColleges.length} ${filteredColleges.length === 1 ? 'College' : 'Colleges'} ${selectedUniversity ? `in ${selectedUniversity.name}` : (userRole === 'admin' || userRole === 'authority') ? 'Across All Universities' : ''}`;
 
 
+  if (universitiesLoading || loading) { // Check loading for both
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <p className="text-xl text-text-muted">Loading data...</p>
+        {/* You can add a spinner here */}
+      </div>
+    );
+  }
+  
+  if (!(userRole === 'admin' || userRole === 'authority')) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center">
+        <svg className="w-16 h-16 text-red-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01"></path></svg>
+        <h1 className="text-2xl font-semibold text-text-dark mb-2">Access Denied</h1>
+        <p className="text-text-muted">You do not have permission to view this page.</p>
+        {(error || universitiesError) && <p className="text-red-500 mt-4">Error: {error || universitiesError}</p>}
+      </div>
+    );
+  }
+  
+  // Admin/Authority view
   return (
     <div className="flex min-h-screen bg-background-light">
-      {/* Aside (University List) */}
       <aside className="flex-none w-64 p-6 bg-background-aside border-r border-gray-100 overflow-y-auto shadow-sm hidden md:block">
         <h2 className="mt-0 mb-6 text-xl font-semibold text-secondary pb-2 border-b border-gray-200">
           Universities
         </h2>
-        <ul className="list-none p-0 m-0 space-y-2">
-          {/* Optional: Add an "All Universities" option */}
-          {/*
-          <li
-            className={`py-3 px-4 cursor-pointer rounded-lg transition duration-200 ease-in-out text-text-dark ${
-              !selectedUniversityId
-                ? 'bg-primary text-white font-medium shadow-md'
-                : 'hover:bg-gray-100 border border-transparent'
-            }`}
-            onClick={() => handleUniversitySelect(null)} // Pass null or ''
-          >
-            All Universities
-          </li>
-          */}
-          {universities.map(uni => (
+        {universitiesLoading && <p className="text-text-muted">Loading universities...</p>}
+        {universitiesError && <p className="text-red-500 text-sm">Error: {universitiesError}</p>}
+        {!universitiesLoading && !universitiesError && (
+          <ul className="list-none p-0 m-0 space-y-2">
             <li
-              key={uni.id}
               className={`py-3 px-4 cursor-pointer rounded-lg transition duration-200 ease-in-out text-text-dark ${
-                selectedUniversityId === uni.id
-                  ? 'bg-primary text-white font-medium shadow-md' // Highlight only the selected one
+                !selectedUniversityId
+                  ? 'bg-primary text-white font-medium shadow-md'
                   : 'hover:bg-gray-100 border border-transparent'
               }`}
-              onClick={() => handleUniversitySelect(uni.id)}
+              onClick={() => handleUniversitySelect(null)} // Pass null for "All Universities"
             >
-              {uni.name}
+              All Universities
             </li>
-          ))}
-        </ul>
+            {universitiesList.map(uni => (
+              <li
+                key={uni.id}
+                className={`py-3 px-4 cursor-pointer rounded-lg transition duration-200 ease-in-out text-text-dark ${
+                  selectedUniversityId === uni.id
+                    ? 'bg-primary text-white font-medium shadow-md'
+                    : 'hover:bg-gray-100 border border-transparent'
+                }`}
+                onClick={() => handleUniversitySelect(uni.id)}
+              >
+                {uni.name}
+              </li>
+            ))}
+          </ul>
+        )}
       </aside>
 
-      {/* Main Content Area */}
       <main className="flex-grow p-6 md:p-8 overflow-y-auto">
-        {/* Mobile University Selector */}
         <div className="block md:hidden mb-6">
           <label htmlFor="university-selector" className="block text-sm font-medium text-text-muted mb-2">
             Select University
           </label>
           <select
             id="university-selector"
-            value={selectedUniversityId || ''} // Handle null/undefined case
-            onChange={(e) => handleUniversitySelect(e.target.value || null)} // Pass null if empty option selected
+            value={selectedUniversityId || ''} // Handle null for "All Universities"
+            onChange={(e) => handleUniversitySelect(e.target.value ? e.target.value : null)} // Ensure null if empty string
             className="w-full p-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            disabled={universitiesLoading || !!universitiesError}
           >
-             <option value="">All Universities</option> {/* Option for selecting none */}
-            {universities.map(uni => (
+             <option value="">All Universities</option>
+            {universitiesList.map(uni => (
               <option key={uni.id} value={uni.id}>{uni.name}</option>
             ))}
           </select>
+          {universitiesLoading && <p className="text-text-muted text-sm mt-1">Loading universities...</p>}
+          {universitiesError && <p className="text-red-500 text-sm mt-1">Error: {universitiesError}</p>}
         </div>
 
-        {/* Header with dynamic title */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-8 pb-4 border-b border-gray-200">
           <div>
             <h1 className="text-2xl md:text-3xl font-semibold text-text-dark mb-1">
@@ -376,8 +433,6 @@ const College = () => {
               {countMessage}
             </p>
           </div>
-
-          {/* Search box */}
           <div className="relative mt-4 sm:mt-0 w-full sm:w-72">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -386,12 +441,11 @@ const College = () => {
             </div>
             <input
               type="text"
-              placeholder={selectedUniversity ? `Search in ${selectedUniversity.code}...` : "Search all colleges..."} // Dynamic placeholder
+              placeholder={selectedUniversity ? `Search in ${selectedUniversity.code}...` : "Search all colleges..."}
               value={searchTerm}
               onChange={handleSearchChange}
-              className="py-2 pl-10 pr-10 block w-full border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200" // Added pr-10 for clear button space
+              className="py-2 pl-10 pr-10 block w-full border border-gray-300 rounded-lg text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition duration-200"
             />
-             {/* Clear search button */}
              {searchTerm && (
                 <button
                     onClick={() => setSearchTerm('')}
@@ -405,46 +459,52 @@ const College = () => {
             )}
           </div>
         </div>
+        
+        {error && ( // This is for college fetching errors
+          <div className="mb-4 p-4 bg-red-100 text-red-700 border border-red-300 rounded-md">
+            <p>Error fetching colleges: {error}</p>
+          </div>
+        )}
 
-        {/* Colleges Grid */}
-        {filteredColleges.length > 0 ? (
+        {loading && !error && <p className="text-text-muted">Loading colleges...</p>}
+
+        {!loading && filteredColleges.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
             {filteredColleges.map(college => (
-              // Pass the university code to the card
               <CollegeCard
                 key={college.id}
                 college={college}
-                universityCode={universityCodeMap[college.universityId]} // Look up the code
+                universityCode={universityCodeMap[college.universityId]}
                 onClick={openPopup}
               />
             ))}
           </div>
         ) : (
-          // No Results Message
-          <div className="flex flex-col items-center justify-center py-16">
-            <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            <p className="text-center text-text-muted text-lg">
-              {searchTerm
-                ? 'No colleges found matching your search criteria.'
-                : selectedUniversityId
-                  ? `No colleges found for ${selectedUniversity?.name}.` // Use optional chaining
-                  : 'Please select a university or enter a search term.'}
-            </p>
-            {searchTerm && (
-              <button
-                onClick={() => setSearchTerm('')}
-                className="mt-4 text-primary hover:text-primary-dark font-medium"
-              >
-                Clear search
-              </button>
-            )}
-          </div>
+          !loading && ( // Only show "no colleges" if not loading
+            <div className="flex flex-col items-center justify-center py-16">
+              <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+              <p className="text-center text-text-muted text-lg">
+                {searchTerm
+                  ? 'No colleges found matching your search criteria.'
+                  : selectedUniversityId
+                    ? `No colleges found for ${selectedUniversity?.name}.`
+                    : 'No colleges available or select a university/search.'}
+              </p>
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="mt-4 text-primary hover:text-primary-dark font-medium"
+                >
+                  Clear search
+                </button>
+              )}
+            </div>
+          )
         )}
       </main>
 
-      {/* Render the popup conditionally */}
       {isPopupOpen && selectedCollege && (
           <CollegePopup
               college={selectedCollege}

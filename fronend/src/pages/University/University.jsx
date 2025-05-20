@@ -1,20 +1,15 @@
 "use client"; // Required for Next.js App Router
 
-import React, { useState, useMemo, useEffect } from "react";
-import { PlusCircle, Trash2, Search, ArrowUpDown, Edit, Loader2, AlertCircle } from "lucide-react";
-import UniversityModal from "./UniversityModal";
-
+import React, { useState, useEffect, useContext, useMemo } from "react";
+import { PlusCircle, Search, ArrowUpDown, Loader2, AlertCircle } from "lucide-react";
+import { fetchUniversities, addUniversity, editUniversity, deleteUniversity } from "./functions";
+import UniversityTable from "./components/UniversityTable";
+import UniversityModalManager from "./components/UniversityModalManager";
+import UniversityStaffView from "./components/UniversityStaffView";
+import { useToast } from "../../context/ToastContext";
+import { useAuth } from "../../context/AuthContext";
 
 // Custom Debounce Hook for Search Optimization
-
-const getRandomLogo = (name) => `https://picsum.photos/seed/${encodeURIComponent(name)}/40/40`;
-const API_Actions = {
-  getAll: "universities/all",
-  add: "universities/add",
-  edit: "universities/edit/",
-  delete: "universities/delete/",
-};
-
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -26,112 +21,113 @@ function useDebounce(value, delay) {
   return debouncedValue;
 }
 
-// University Modal Component
-
 // Main University Management Page Component
-export default function UniversityManagementPage() {
+export default function University() {
+  // Get user info from AuthContext
+  const { user } = useAuth();
+  const { showSuccess, showError, showWarning, showInfo } = useToast();
+
   const [universities, setUniversities] = useState([]);
-  const [editingUniversity, setEditingUniversity] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [searchInput, setSearchInput] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedUniversity, setSelectedUniversity] = useState(null);
+  const [modalState, setModalState] = useState({
+    isOpen: false,
+    mode: "view", // view, add, edit
+  });
   const [sortColumn, setSortColumn] = useState("name");
   const [sortAsc, setSortAsc] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
-  const API_BASE_URL = "http://localhost:3000/";
-  const debouncedSearchTerm = useDebounce(searchInput, 300);
+  // Check if user is admin or authority
+  const isAdminOrAuthority = user && (user.role === "admin" || user.role === "authority");
 
   useEffect(() => {
-    const fetchUniversities = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(API_BASE_URL+API_Actions.getAll, {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
-          },
-        });
-        if (!response.ok) throw new Error(`Failed to fetch universities: ${response.statusText}`);
-        const data = await response.json();
-        if (!Array.isArray(data)) throw new Error("Invalid data format from server.");
-        setUniversities(data);
-      } catch (err) {
-        setError(err.message || "Failed to load universities.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchUniversities();
-  }, [API_BASE_URL]);
-
-  const filteredAndSortedUniversities = useMemo(() => {
-    let result = [...universities];
-    if (debouncedSearchTerm) {
-      const lowerSearchTerm = debouncedSearchTerm.toLowerCase();
-      result = result.filter((uni) =>
-        [uni.name, uni.country, uni.abbreviation].some((field) =>
-          field?.toLowerCase().includes(lowerSearchTerm)
-        )
-      );
+    if (isAdminOrAuthority) {
+      loadUniversities();
+    } else {
+      setLoading(false); // No need to load universities list for staff
     }
-    result.sort((a, b) => {
-      const valA = a[sortColumn] ?? "";
-      const valB = b[sortColumn] ?? "";
-      const comparison = typeof valA === "number" && typeof valB === "number"
-        ? valA - valB
-        : String(valA).localeCompare(String(valB));
-      return sortAsc ? comparison : -comparison;
-    });
-    return result;
-  }, [universities, debouncedSearchTerm, sortColumn, sortAsc]);
+  }, [isAdminOrAuthority]);
 
-  const handleDelete = async (uniId, uniName) => {
-    if (!window.confirm(`Delete ${uniName}? This cannot be undone.`)) return;
+  const loadUniversities = async () => {
     try {
-      const response = await fetch(API_BASE_URL+API_Actions.delete+uniId, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
-        },
-      });
-      if (!response.ok){ throw new Error("Failed to delete university.") }
-      else{
-        alert(`University ${uniName} deleted successfully.`);
-      }
-      setUniversities((prev) => prev.filter((uni) => uni.id !== uniId));
+      setLoading(true);
+      const data = await fetchUniversities();
+      setUniversities(data);
+      console.log("Fetched universities:", data);
+      setError(null);
     } catch (err) {
-      setError(err.message || "Failed to delete university.");
+      console.error("Failed to load universities:", err);
+      setError("Failed to load universities. Please try again later.");
+      showError("Failed to load universities. Please try again later.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSaveUniversity = async (uniData, isEditing) => {
-    const url = isEditin
-      ? API_BASE_URL + API_Actions.edit + uniData.id 
-      : API_BASE_URL + API_Actions.add;
-    const method = isEditing ? "PUT" : "POST";
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+  };
+
+  const filteredUniversities = universities.filter((university) => {
+    const nameMatch = university.name?.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
+    // You can add more fields to search here, for example:
+    // const countryMatch = university.country?.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
+    // const emailMatch = university.email?.toLowerCase().includes(debouncedSearchTerm.toLowerCase());
+    // return nameMatch || countryMatch || emailMatch;
+    return nameMatch; 
+  });
+
+  const handleOpenModal = (mode, university = null) => {
+    setSelectedUniversity(university);
+    setModalState({
+      isOpen: true,
+      mode,
+    });
+  };
+
+  const handleCloseModal = () => {
+    setModalState({
+      ...modalState,
+      isOpen: false,
+    });
+  };
+
+  const handleSaveUniversity = async (formData, isEditing) => {
     try {
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("authToken")}`,
-        },
-        body: JSON.stringify(uniData),
-      });
-      if (!response.ok) throw new Error("Failed to save university.");
-      const savedUniversity = await response.json();
-      setUniversities((prev) =>
-        isEditing
-          ? prev.map((uni) => (uni.id === savedUniversity.id ? savedUniversity : uni))
-          : [...prev, savedUniversity]
-      );
-      setIsModalOpen(false);
+      let savedUniversity;
+      if (isEditing) {
+        savedUniversity = await editUniversity(formData);
+        setUniversities((prev) =>
+          prev.map((uni) => (uni.id === savedUniversity.id ? savedUniversity : uni))
+        );
+        showSuccess("University updated successfully!");
+      } else {
+        savedUniversity = await addUniversity(formData);
+        setUniversities((prev) => [...prev, savedUniversity]);
+        showSuccess("University added successfully!");
+      }
+      handleCloseModal();
     } catch (err) {
-      setError(err.message || "Failed to save university.");
-      throw err;
+      console.error("Error saving university:", err);
+      showError(err.message || "Failed to save university. Please try again.");
+    }
+  };
+
+  const handleDeleteUniversity = async (universityId) => {
+    if (!window.confirm("Are you sure you want to delete this university?")) {
+      return;
+    }
+
+    try {
+      await deleteUniversity(universityId);
+      setUniversities((prev) => prev.filter((uni) => uni.id !== universityId));
+      showSuccess("University deleted successfully!");
+    } catch (err) {
+      console.error("Error deleting university:", err);
+      showError(err.message || "Failed to delete university. Please try again.");
     }
   };
 
@@ -139,6 +135,20 @@ export default function UniversityManagementPage() {
     setSortColumn(column);
     setSortAsc(column === sortColumn ? !sortAsc : true);
   };
+
+  const sortedUniversities = useMemo(() => {
+    const sorted = [...filteredUniversities];
+    console.log('filteredUniversities', filteredUniversities);
+    sorted.sort((a, b) => {
+      const valA = a[sortColumn] ?? "";
+      const valB = b[sortColumn] ?? "";
+      const comparison = typeof valA === "number" && typeof valB === "number"
+        ? valA - valB
+        : String(valA).localeCompare(String(valB));
+      return sortAsc ? comparison : -comparison;
+    });
+    return sorted;
+  }, [filteredUniversities, sortColumn, sortAsc]);
 
   const renderSortableHeader = (label, columnKey) => (
     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onClick={() => handleSort(columnKey)}>
@@ -151,129 +161,75 @@ export default function UniversityManagementPage() {
     </th>
   );
 
+  if (loading) return (
+    <div className="flex justify-center items-center h-screen">
+      <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+      <span className="ml-2 text-lg text-gray-700">Loading...</span>
+    </div>
+  );
+  
+  if (error) return (
+    <div className="max-w-3xl mx-auto p-6 bg-red-50 border border-red-100 rounded-lg mt-8">
+      <div className="flex items-start">
+        <AlertCircle className="h-5 w-5 text-red-500 mt-0.5" />
+        <div className="ml-3">
+          <h3 className="text-sm font-medium text-red-800">An error occurred</h3>
+          <div className="mt-2 text-sm text-red-700">{error}</div>
+        </div>
+      </div>
+    </div>
+  );
+  
+  // If user is not admin or authority, show the staff view
+  if (!isAdminOrAuthority) {
+    return <UniversityStaffView />;
+  }
+
+  // Continue with admin/authority view
   return (
-    <div className="container mx-auto p-6 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">University Management</h1>
-      <div className="mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div className="relative w-full sm:w-1/2">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-8 text-gray-800">Universities</h1>
+      
+      {/* Search and Add University Section */}
+      <div className="flex justify-between items-center mb-6">
+        <div className="relative w-64">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-gray-400" />
+          </div>
           <input
             type="text"
-            placeholder="Search name, country, abbreviation..."
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            className="pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 w-full"
-            disabled={isLoading}
-            aria-label="Search universities"
+            placeholder="Search universities..."
+            value={searchTerm}
+            onChange={(e) => handleSearch(e.target.value)}
+            className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
-        <button
-          onClick={() => {
-            setEditingUniversity(null);
-            setIsModalOpen(true);
-          }}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md flex items-center gap-2 disabled:opacity-50"
-          disabled={isLoading}
-        >
-          <PlusCircle size={20} />
-          Add University
-        </button>
+        {user && user.role === 'authority' && (
+          <button
+            onClick={() => handleOpenModal("add")}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            <PlusCircle className="h-5 w-5 mr-1" />
+            <span>Add University</span>
+          </button>
+        )}
       </div>
+      
+      <UniversityTable
+        universities={sortedUniversities} 
+        onView={(uni) => handleOpenModal("view", uni)}
+        onEdit={(uni) => handleOpenModal("edit", uni)}
+        onDelete={handleDeleteUniversity}
+        renderSortableHeader={renderSortableHeader}
+      />
 
-      {isLoading && (
-        <div className="flex justify-center items-center py-10">
-          <Loader2 className="animate-spin text-indigo-600 mr-3" size={24} />
-          <span className="text-gray-600">Loading universities...</span>
-        </div>
-      )}
-
-      {error && !isLoading && (
-        <div className="mb-6 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded-md flex items-center gap-2">
-          <AlertCircle size={24} />
-          <div>
-            <p className="font-semibold">Error</p>
-            <p>{error}</p>
-          </div>
-        </div>
-      )}
-
-      {!isLoading && !error && (
-        <div className="bg-white shadow-md rounded-lg overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-100 sticky top-0">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">Logo</th>
-                {renderSortableHeader("Name", "name")}
-                {renderSortableHeader("Country", "country")}
-                {renderSortableHeader("Email", "email")}
-                {renderSortableHeader("Established", "established")}
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Website</th>
-                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 ">
-              {filteredAndSortedUniversities.length > 0 ? (
-                filteredAndSortedUniversities.map((uni) => (
-                  <tr key={uni.id} className={`even:bg-gray-50 hover:bg-gray-100 transition-colors duration-150`}>
-                    <td className="px-4 py-4">
-                      <img
-                        src={getRandomLogo(uni.name)}
-                        alt={`${uni.name} logo`}
-                        className="w-10 h-10 rounded-full object-cover"
-                        onError={(e) => (e.target.src = "https://via.placeholder.com/40?text=Error")}
-                      />
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">{uni.name || "-"}</div>
-                      <div className="text-xs text-gray-500">{uni.abbreviation || ""}</div>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{uni.country || "-"}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{uni.email || "-"}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{uni.since || "-"}</td>
-                    <td className="px-6 py-4">
-                      {uni.website ? (
-                        <a href={uni.website} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-800 hover:underline text-center">
-                          Visit
-                        </a>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => setEditingUniversity(uni) || setIsModalOpen(true)}
-                        className="text-blue-600 hover:text-blue-800 p-1 rounded-full hover:bg-blue-100"
-                        aria-label={`Edit ${uni.name}`}
-                      >
-                        <Edit size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(uni.id, uni.name)}
-                        className="text-red-600 hover:text-red-800 p-1 rounded-full hover:bg-red-100 ml-2"
-                        aria-label={`Delete ${uni.name}`}
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="7" className="px-6 py-10 text-center text-gray-500">
-                    {debouncedSearchTerm ? "No universities found matching your search." : "No universities found. Add one!"}
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      <UniversityModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+      <UniversityModalManager
+        isOpen={modalState.isOpen}
+        onClose={handleCloseModal}
         onSave={handleSaveUniversity}
-        initialData={editingUniversity}
+        universityData={selectedUniversity}
+        mode={modalState.mode}
+        userRole={user?.role}
       />
     </div>
   );

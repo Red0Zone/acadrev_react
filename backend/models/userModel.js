@@ -1,39 +1,64 @@
 const db = require('../config/db');
 
-// Add User
-const addUser = async (data) => {
-  const { username, password, email, level, university, college, department, program, perm } = data;
+// إنشاء مستخدم
+const createUser = async (data) => {
+  const { username, email, password, role, authority_id, university_id, college_id, department_id } = data;
+
   const [result] = await db.promise().query(
-    `INSERT INTO users (username, password, email, level, university, college, department, program, perm)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-    [username, password, email, level, university, college, department, program, perm]
+    `INSERT INTO users (username, email, password, role, authority_id, university_id, college_id, department_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [username, email, password, role, authority_id, university_id, college_id, department_id]
   );
+
   return result;
 };
 
-// Delete User
+const getAllUsers = async () => {
+  const [rows] = await db.promise().query(`
+    SELECT 
+      id, username, email, role, authority_id, university_id, college_id, department_id FROM users`);
+  return rows;
+};
+
+
+// تعديل مستخدم
+const updateUser = async (id, data) => {
+  const { username, email, password, role, authority_id, university_id, college_id, department_id } = data;
+
+  const [result] = await db.promise().query(
+    `UPDATE users SET 
+      username = ?, email = ?, password = ?, role = ?, 
+      authority_id = ?, university_id = ?, college_id = ?, department_id = ?
+     WHERE id = ?`,
+    [username, email, password, role, authority_id, university_id, college_id, department_id, id]
+  );
+
+  return result;
+};
+
+// حذف مستخدم
 const deleteUser = async (id) => {
   const [result] = await db.promise().query(
-    `DELETE FROM users WHERE id = ?`,
-    [id]
+    'DELETE FROM users WHERE id = ?', [id]
   );
   return result;
 };
 
-// Update User
-const updateUser = async (id, data) => {
-  const { username, password, email, level, university, college, department, program, perm } = data;
-  const [result] = await db.promise().query(
-    `UPDATE users 
-     SET username = ?, password = ?, email = ?, level = ?, university = ?, college = ?, department = ?, program = ?, perm = ?
+// جلب معلومات مستخدم حسب ID
+const getUserProfileById = async (id) => {
+  const [rows] = await db.promise().query(
+    `SELECT id, username, email, role, authority_id, university_id, college_id, department_id, created_at 
+     FROM users 
      WHERE id = ?`,
-    [username, password, email, level, university, college, department, program, perm, id]
+    [id]
   );
-  return result;
+  return rows[0];
 };
 
 module.exports = {
-  addUser,
-  deleteUser,
+  createUser,
+  getAllUsers,
   updateUser,
+  getUserProfileById,
+  deleteUser
 };

@@ -1,58 +1,45 @@
 const db = require('../config/db');
 
-// Add Department
-const addDepartment = async (data) => {
-  const { name, head, website, collageId } = data;
+// إنشاء قسم جديد
+const createDepartment = async (data) => {
+  const { name, email, website, address, logo, college_id, head_name } = data;
   const [result] = await db.promise().query(
-    `INSERT INTO departments (name, head, website, collage_id) VALUES (?, ?, ?, ?)`,
-    [name, head, website, collageId]
+    `INSERT INTO departments (name, email, website, address, logo, college_id, head_name)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [name, email, website, address, logo, college_id, head_name]
   );
-  return result;
+  return result.insertId;
 };
 
-// Delete Department
-const deleteDepartment = async (id) => {
-  const [result] = await db.promise().query(
-    `DELETE FROM departments WHERE id = ?`,
-    [id]
+// جلب كل الأقسام
+const getAllDepartments = async () => {
+  const [rows] = await db.promise().query(
+    `SELECT d.*, c.name AS college_name
+     FROM departments d
+     LEFT JOIN collages c ON d.college_id = c.id`
   );
-  return result;
+  return rows;
 };
 
-// View Department by ID
+// جلب قسم حسب ID
 const getDepartmentById = async (id) => {
-  const [rows] = await db.promise().query(
-    `SELECT * FROM departments WHERE id = ?`,
-    [id]
-  );
-  return rows;
+  const [rows] = await db.promise().query('SELECT * FROM departments WHERE id = ?', [id]);
+  return rows[0];
 };
 
-// Search Departments by Name
-const searchDepartmentsByName = async (name) => {
-  const [rows] = await db.promise().query(
-    `SELECT * FROM departments WHERE name LIKE ?`,
-    [`%${name}%`]
-  );
-  return rows;
-};
-
-// Update Department
+// تعديل بيانات القسم
 const updateDepartment = async (id, data) => {
-  const { name, head, website, collageId } = data;
+  const { email, website, address, logo, head_name } = data;
   const [result] = await db.promise().query(
-    `UPDATE departments 
-     SET name = ?, head = ?, website = ?, collage_id = ?
-     WHERE id = ?`,
-    [name, head, website, collageId, id]
+    `UPDATE departments SET email = ?, website = ?, address = ?, logo = ?, head_name = ? WHERE id = ?`,
+    [email, website, address, logo, head_name, id]
   );
   return result;
 };
 
 module.exports = {
-  addDepartment,
-  deleteDepartment,
+  createDepartment,
+  getAllDepartments,
   getDepartmentById,
-  searchDepartmentsByName,
-  updateDepartment,
+  updateDepartment
 };
