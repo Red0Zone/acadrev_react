@@ -113,7 +113,7 @@ export const deleteCollege = async (collegeId) => {
 export const fetchCollegeById = async (collegeId) => {
   // Assuming the endpoint for a single college is /colleges/:id
   // If API_Actions includes a getById, prefer that: e.g., API_BASE_URL + API_Actions.getById + collegeId
-  const response = await fetch(`${API_BASE_URL}/collages/${collegeId}`, { 
+  const response = await fetch(`${API_BASE_URL}/colleges/${collegeId}`, { // Corrected "collages" to "colleges"
     headers: getAuthHeaders(),
   });
 
@@ -134,13 +134,34 @@ export const fetchCollegeById = async (collegeId) => {
  */
 export const fetchMyCollege = async () => {
   // Assuming the endpoint for the user's college is /colleges/me
-  const response = await fetch(`${API_BASE_URL}/collages/me`, { 
+  const response = await fetch(`${API_BASE_URL}colleges/me`, { // Corrected "collages" to "colleges"
     headers: getAuthHeaders(),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`Failed to fetch your college: ${response.statusText} (Status: ${response.status}) - ${errorText}`);
+  }
+
+  const data = await response.json();
+  return data;
+};
+
+/**
+ * Fetches colleges for a specific university ID from the API.
+ * @param {string|number} universityId - The ID of the university.
+ * @returns {Promise<Array<Object>>} A promise that resolves to an array of college objects.
+ * @throws {Error} If the API request fails or returns invalid data.
+ */
+export const fetchCollegesByUniversity = async () => {
+ 
+  const response = await fetch(API_BASE_URL + API_Actions.getCollegesByUni, { // Corrected "collages" to "colleges"
+    headers: getAuthHeaders(),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to fetch your Universities colleges: ${response.statusText} (Status: ${response.status}) - ${errorText}`);
   }
 
   const data = await response.json();

@@ -10,7 +10,7 @@ router.post('/add', authenticateToken, authorizeRole(['authority']), universityC
 router.get('/all', authenticateToken, authorizeRole(['admin', 'authority']), universityController.getAllUniversities);
 
 // الجامعة تعرض بياناتها الشخصية
-router.get('/me', authenticateToken, authorizeRole(['university']), universityController.getMyUniversity);
+router.get('/me', authenticateToken, authorizeRole(['university','college','department']), universityController.getMyUniversity);
 
 // الجامعة تعدل بياناتها
 router.put('/update', authenticateToken, authorizeRole(['university']), universityController.updateUniversity);
