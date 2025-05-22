@@ -10,9 +10,10 @@ import {
 import { useAuth } from "../../context/AuthContext"
 import { useState } from "react"
 import "./Header.css"
+import { Link } from "react-router-dom"
 
 function Header({ toggleSidebar, isMobile }) {
-  const { isLoggedIn, user, logout } = useAuth()
+  const {  user, logout } = useAuth()
   const [showDropdown, setShowDropdown] = useState(false)
   
   const toggleDropdown = () => setShowDropdown(!showDropdown)
@@ -97,12 +98,12 @@ function Header({ toggleSidebar, isMobile }) {
                 transition={{ duration: 0.2 }}
                 className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-50 border border-gray-200 overflow-hidden"
               >
-                <a href="#profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                <Link to="profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
                   <div className="flex items-center">
                     <User size={16} className="mr-2" />
                     Profile
                   </div>
-                </a>
+                </Link>
                 <a href="#settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
                   <div className="flex items-center">
                     <Settings size={16} className="mr-2" />

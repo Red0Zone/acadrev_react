@@ -4,6 +4,8 @@ import Login from './pages/Login';
 import MainPage from './pages/Main';
 import PageNotFound from './pages/PageNotFound';
 import ManageUniPage from "./pages/University";
+import DepartmentPage from "./pages/Department";
+import Profile from './pages/Profile';
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom';
 import Header from "./components/Header"; 
 import Footer from "./components/Footer"; 
@@ -147,6 +149,8 @@ function App() {
             { path: 'university', element: <ManageUniPage /> },
             { path: 'settings', element: <SettingsPage /> },
             { path: 'college', element: <College /> },
+            { path: 'profile', element: <Profile /> },
+            { path: 'departments', element: <DepartmentPage /> },
           ],
         },
         { path: 'login', element: <Login /> },

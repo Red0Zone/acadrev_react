@@ -4,7 +4,7 @@ import { motion } from "framer-motion"
 import { Link } from "react-router-dom"   
 import { ArrowRight } from "lucide-react";
 
-export function DashboardCard({ icon, title, subtitle, color = "from-blue-500 to-blue-700", stats, description, isActive }) {
+export function DashboardCard({ icon, title, subtitle, color = "from-blue-500 to-blue-700", stats, description, isActive,destination }) {
 
   
   return (
@@ -13,7 +13,7 @@ export function DashboardCard({ icon, title, subtitle, color = "from-blue-500 to
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
       className="h-full"
     >
-      <Link to={`/${title.toLowerCase()}`} className="block h-full">
+      <Link to={`/${destination}`} className="block h-full">
         <div className="relative flex flex-col h-full overflow-hidden rounded-xl shadow-md bg-white transition-all duration-300 hover:shadow-xl border border-gray-100">
           {/* Gradient Header */}
           <div className={`w-full h-2 bg-gradient-to-r ${color}`}></div>

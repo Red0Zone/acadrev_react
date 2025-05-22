@@ -98,6 +98,7 @@ const getAllUsers = async (req, res) => {
     res.status(500).json({ message: 'Error fetching users', error: err });
   }
 };
+
 const getUserProfile = async (req, res) => {
   const userId = req.user.id;
 

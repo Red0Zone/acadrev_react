@@ -6,9 +6,8 @@ import "./Main.css";
 
 function Main() {
   const [greeting, setGreeting] = useState("");
-  const currentUserLevel = 1;
   const { user } = useAuth();
-  
+  const userRole = user?.role || null;
   // Set greeting based on time of day
   useEffect(() => {
     const hour = new Date().getHours();
@@ -56,7 +55,7 @@ function Main() {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h2 className="text-xl font-semibold text-gray-800 mb-6">Module Access</h2>
               <div className="dashboard-card-container">
-                <IconGrid userLevel={currentUserLevel} />
+                <IconGrid userLevel={userRole} />
               </div>
             </div>
           </div>

@@ -1,8 +1,9 @@
 "use client"
 import { motion } from "framer-motion"
-  import { Building2, Landmark, BookOpen, Users, BarChart3, University } from "lucide-react"
+import { Building2, Landmark, BookOpen, Users, BarChart3, University, UserCircle } from "lucide-react" // Added UserCircle
 import { DashboardCard } from "./dashboard-card"
 import { useState } from "react"
+
 
 // Animation variants for staggered children
 const containerVariants = {
@@ -34,8 +35,8 @@ const itemVariants = {
   }
 }
 
-// Card data with enhanced metadata
-const navCards = [
+// Base card data
+const baseNavCards = [
   { 
     id: 1, 
     icon: <University className="w-6 h-6" />, 
@@ -43,7 +44,8 @@ const navCards = [
     subtitle: "الجامعات",
     color: "from-blue-500 to-blue-700",
     stats: { count: 12, label: "universities" },
-    description: "Manage university profiles and accreditation status"
+    description: "Manage university profiles and accreditation status",
+    destination: "university"
   },
   { 
     id: 2, 
@@ -52,7 +54,8 @@ const navCards = [
     subtitle: "الكليات",
     color: "from-purple-500 to-purple-700",
     stats: { count: 48, label: "colleges" },
-    description: "Oversee college structures and academic units"
+    description: "Oversee college structures and academic units",
+    destination: "college"
   },
   { 
     id: 3, 
@@ -61,7 +64,8 @@ const navCards = [
     subtitle: "الاقسام",
     color: "from-green-500 to-green-700",
     stats: { count: 126, label: "departments" },
-    description: "Monitor departmental performance and metrics"
+    description: "Monitor departmental performance and metrics",
+    destination: "department"
   },
   { 
     id: 4, 
@@ -70,37 +74,58 @@ const navCards = [
     subtitle: "البرامج",
     color: "from-amber-500 to-amber-700",
     stats: { count: 284, label: "programs" },
-    description: "Review academic programs and curriculum structures"
+    description: "Review academic programs and curriculum structures",
+    destination: "program"
   },
+  // User-specific card will be added dynamically
   { 
-    id: 5, 
-    icon: <Users className="w-6 h-6" />, 
-    title: "Users", 
-    subtitle: "المستخدمون",
-    color: "from-red-500 to-red-700",
-    stats: { count: 1840, label: "active users" },
-    description: "Manage user accounts and access permissions"
-  },
-  { 
-    id: 6, 
+    id: 6, // Adjusted ID to avoid conflict
     icon: <BarChart3 className="w-6 h-6" />, 
     title: "Reports", 
     subtitle: "التقارير",
     color: "from-cyan-500 to-cyan-700",
     stats: { count: 53, label: "reports" },
-    description: "Generate analytics and assessment reports"
+    description: "Generate analytics and assessment reports",
+    destination: "reports"
   },
-]
+];
 
-function IconGrid({ userLevel = 1 }) {
+const adminUserCard = {
+  id: 5, 
+  icon: <Users className="w-6 h-6" />, 
+  title: "Users", 
+  subtitle: "المستخدمون",
+  color: "from-red-500 to-red-700",
+  stats: { count: 1840, label: "active users" }, // Example stats
+  description: "Manage user accounts and access permissions",
+  destination: "users"
+};
+
+const nonAdminUserProfileCard = {
+  id: 5, // Same ID for consistent placement if desired, or different
+  icon: <UserCircle className="w-6 h-6" />, 
+  title: "User Profile", 
+  subtitle: "الملف الشخصي",
+  color: "from-teal-500 to-teal-700",
+  stats: { count: 1, label: "profile" },
+  description: "View and manage your personal profile",
+  destination: "profile"
+};
+
+function IconGrid({ userLevel }) { // Expect a user object e.g., { role: 'admin' } or { role: 'authority' }
   const [hoveredCard, setHoveredCard] = useState(null);
+  const navCards = [
+    ...baseNavCards.slice(0, 4), // Cards before user-specific one
+    userLevel && userLevel === 'admin' ? adminUserCard : nonAdminUserProfileCard,
+    ...baseNavCards.slice(4)  // Cards after user-specific one (Reports card)
+  ];
   
-  // Filter visible cards based on user level
+  // Filter visible cards (if any further global filtering is needed beyond role-specific card)
   const visibleNavCards = navCards.filter(() => {
-    // This logic should eventually match your DB query logic
-    // For now, show all cards
-    return true
-  })
+    // Example: if you had a userLevel prop for other filtering
+    // if (card.minLevel && userLevel < card.minLevel) return false;
+    return true;
+  });
 
   return (
     <div className="py-4">
@@ -133,6 +158,7 @@ function IconGrid({ userLevel = 1 }) {
               stats={card.stats}
               description={card.description}
               isActive={hoveredCard === card.id}
+              destination={card.destination}
             />
           </motion.div>
         ))}

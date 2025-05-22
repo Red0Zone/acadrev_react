@@ -14,34 +14,10 @@ const getAuthHeaders = () => {
 };
 
 
-const fetchUsers = async () => {
-  const response = await fetch(`${API_BASE_URL}${API_Actions.getAll}`, {
-    headers: getAuthHeaders(),
-  }); // Assuming your GET all users endpoint
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: response.statusText }));
-    throw new Error(errorData.message || 'Failed to fetch users');
-  }
-  return response.json();
-};
-
-const addUser = async (userData) => {
-  const response = await fetch(`${API_BASE_URL}users${API_Actions.add}`, { // Assuming your POST user endpoint
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(userData),
-  });
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: response.statusText }));
-    throw new Error(errorData.message || 'Failed to add user');
-  }
-  return response.json();
-};
-
 const updateUser = async (userId, userData) => {
   const response = await fetch(`${API_BASE_URL}users/${userId}`, { // Assuming your PUT user endpoint
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
     body: JSON.stringify(userData),
   });
   if (!response.ok) {
@@ -54,6 +30,7 @@ const updateUser = async (userId, userData) => {
 const deleteUserApi = async (userId) => {
   const response = await fetch(`${API_BASE_URL}users/${userId}`, { // Assuming your DELETE user endpoint
     method: 'DELETE',
+    headers: getAuthHeaders()
   });
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ message: response.statusText }));
@@ -65,7 +42,7 @@ const deleteUserApi = async (userId) => {
 const getCurrentUser = async () => {
   const response = await fetch(`${API_BASE_URL}users/me`, { // Assuming your GET current user endpoint
     method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
+    headers: getAuthHeaders(),
   });
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ message: response.statusText }));
@@ -74,4 +51,4 @@ const getCurrentUser = async () => {
   return response.json();
 };
 
-export { fetchUsers, addUser, updateUser, deleteUserApi, getCurrentUser };
+export {  updateUser, deleteUserApi, getCurrentUser };
