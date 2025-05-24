@@ -1,8 +1,7 @@
-"use client";
-
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../../context/AuthContext";
+import { ROUTES } from '../../constants';
 import "./Login.css";
 
 // Modern academic logo
@@ -63,19 +62,19 @@ const LoadingSpinner = () => (
   </div>
 );
 
-function LoginPage() {
+function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const navigation = useNavigate();
-  const auth = useAuth();
+  const navigate = useNavigate();
+  const { login, isLoading: authLoading, error: authError } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    
+
     if (!username || !password) {
       setError("Please enter both username and password");
       return;
@@ -83,18 +82,15 @@ function LoginPage() {
 
     try {
       setIsLoading(true);
-      console.log("Login attempt with:", { username, password });
-      const loginResponse = await auth.login({username, password});
+      const loginResponse = await login({ username, password });
       if (loginResponse.success) {
-        console.log(`this is loginresponse: ${loginResponse.success}`)
-        navigation("/main");
-      }
-      else {
-        setError(loginResponse.error);
-        setIsLoading(false);
+        navigate(ROUTES.MAIN);
+      } else {
+        setError(loginResponse.error || "Login failed");
       }
     } catch (err) {
       setError(err.message || "An error occurred during login");
+    } finally {
       setIsLoading(false);
     }
   };
@@ -103,12 +99,14 @@ function LoginPage() {
     setShowPassword(!showPassword);
   };
 
+  // Combine local and auth context errors
+  const displayError = error || authError;
+
   return (
     <div className="login-page-background min-h-screen flex items-center justify-center p-4 animate-fade-in">
       <div className="flex w-full max-w-6xl overflow-hidden rounded-lg shadow-2xl bg-opacity-95 backdrop-blur-sm">
         {/* Left side - darknavy background */}
         <div className="hidden md:flex md:w-2/5 bg-darknavy text-white flex-col justify-between p-8 relative overflow-hidden">
-          {/* Abstract gradient shapes */}
           <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
             <div className="absolute top-0 right-0 w-72 h-72 rounded-full bg-gradient-to-b from-teal-400 to-transparent opacity-10 blur-2xl transform translate-x-1/4 -translate-y-1/4"></div>
             <div className="absolute bottom-0 left-0 w-96 h-96 rounded-full bg-gradient-to-t from-blue-500 to-transparent opacity-10 blur-2xl transform -translate-x-1/3 translate-y-1/4"></div>
@@ -152,7 +150,6 @@ function LoginPage() {
 
         {/* Right side - login form */}
         <div className="w-full md:w-3/5 bg-white p-8 relative">
-          {/* Subtle gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-gray-50 to-white opacity-70"></div>
           
           <div className="max-w-md mx-auto relative z-10">
@@ -171,12 +168,12 @@ function LoginPage() {
               </p>
             </div>
 
-            {error && (
+            {displayError && (
               <div className="p-4 mb-6 text-sm text-red-600 bg-red-50 rounded-md border border-red-200 flex items-start animate-fade-in">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                 </svg>
-                <span>{error}</span>
+                <span>{displayError}</span>
               </div>
             )}
 
@@ -199,7 +196,7 @@ function LoginPage() {
                     className="pl-10 w-full py-3 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-darknavy focus:border-transparent transition-colors bg-white bg-opacity-80 backdrop-blur-sm"
                     placeholder="Enter your username"
                     required
-                    disabled={isLoading}
+                    disabled={isLoading || authLoading}
                   />
                 </div>
               </div>
@@ -224,13 +221,13 @@ function LoginPage() {
                     className="pl-10 w-full py-3 px-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-darknavy focus:border-transparent transition-colors bg-white bg-opacity-80 backdrop-blur-sm"
                     placeholder="Enter your password"
                     required
-                    disabled={isLoading}
+                    disabled={isLoading || authLoading}
                   />
                   <button
                     type="button"
                     className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
                     onClick={togglePasswordVisibility}
-                    disabled={isLoading}
+                    disabled={isLoading || authLoading}
                     aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? (
@@ -246,9 +243,9 @@ function LoginPage() {
                 <button
                   type="submit"
                   className="w-full py-3 px-4 rounded-lg focus:outline-none relative transition-all shadow-md hover:shadow-lg bg-gradient-to-r from-darknavy to-blue-700 hover:from-darknavy hover:to-blue-600 text-white transform hover:-translate-y-0.5 active:translate-y-0"
-                  disabled={isLoading}
+                  disabled={isLoading || authLoading}
                 >
-                  {isLoading ? (
+                  {(isLoading || authLoading) ? (
                     <>
                       <span className="opacity-0">Sign in</span>
                       <LoadingSpinner />
@@ -273,4 +270,4 @@ function LoginPage() {
   );
 }
 
-export default LoginPage;
+export default Login;

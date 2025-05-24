@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { addCollege } from '../functions'; // Adjust path if your functions.js is elsewhere
+import { addCollege } from '../../../api/collegeApi'; // Adjust path if your functions.js is elsewhere
 
 const AddCollegeModal = ({ isOpen, onClose, onCollegeAdded, }) => {
   const [collegeName, setCollegeName] = useState('');
