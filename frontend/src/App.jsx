@@ -4,7 +4,7 @@ import Login from './pages/Login';
 import MainPage from './pages/Main';
 import PageNotFound from './pages/PageNotFound';
 import ManageUniPage from "./pages/University";
-import DepartmentPage from "./pages/Department";
+import Department from "./pages/Department";
 import Profile from './pages/Profile';
 import { createBrowserRouter, RouterProvider, Navigate, Outlet } from 'react-router-dom';
 import Header from "./components/Header"; 
@@ -150,7 +150,7 @@ function App() {
             { path: 'settings', element: <SettingsPage /> },
             { path: 'college', element: <College /> },
             { path: 'profile', element: <Profile /> },
-            { path: 'departments', element: <DepartmentPage /> },
+            { path: 'departments', element: <Department /> },
           ],
         },
         { path: 'login', element: <Login /> },

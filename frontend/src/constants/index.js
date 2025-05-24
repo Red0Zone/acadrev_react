@@ -24,9 +24,13 @@ export const ENDPOINTS = {
         BY_UNIVERSITY:'/colleges/uniAll',
     },
     DEPARTMENTS: {
-      LIST: '/departments',
+      GWT_ALL: '/departments/all',
+      CREATE: '/departments/add',
+      UPDATE: '/departments/update',
+      DELETE: '/departments/delete',
+      MY_DEPARTMENT: '/departments/me',
+      BY_COLLEGE: '/departments/collegeAll',
       GET_BY_ID: (id) => `/departments/${id}`,
-      CREATE: '/departments',
     },
     PROGRAMS: {
       LIST: '/programs',
