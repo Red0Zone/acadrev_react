@@ -1,49 +1,64 @@
-// models/userModel.js
+const db = require('../config/db');
 
-const userModel = {
-  id: {
-    type: 'INT',
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  username: {
-    type: 'VARCHAR(100)',
-    allowNull: false,
-    unique: true,
-  },
-  password: {
-    type: 'VARCHAR(255)',
-    allowNull: false,
-  },
-  email: {
-    type: 'VARCHAR(100)',
-    allowNull: false,
-    unique: true,
-  },
-  level: {
-    type: 'VARCHAR(50)',
-    allowNull: false,
-  },
-  university: {
-    type: 'VARCHAR(255)',
-    allowNull: false,
-  },
-  college: {
-    type: 'VARCHAR(255)',
-    allowNull: false,
-  },
-  department: {
-    type: 'VARCHAR(255)',
-    allowNull: false,
-  },
-  program: {
-    type: 'VARCHAR(255)',
-    allowNull: false,
-  },
-  perm: {
-    type: 'VARCHAR(255)',
-    allowNull: true, // Assuming it's optional
-  },
+// إنشاء مستخدم
+const createUser = async (data) => {
+  const { username, email, password, role, authority_id, university_id, college_id, department_id } = data;
+
+  const [result] = await db.promise().query(
+    `INSERT INTO users (username, email, password, role, authority_id, university_id, college_id, department_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [username, email, password, role, authority_id, university_id, college_id, department_id]
+  );
+
+  return result;
 };
 
-module.exports = userModel;
+const getAllUsers = async () => {
+  const [rows] = await db.promise().query(`
+    SELECT 
+      id, username, email, role, authority_id, university_id, college_id, department_id FROM users`);
+  return rows;
+};
+
+
+// تعديل مستخدم
+const updateUser = async (id, data) => {
+  const { username, email, password, role, authority_id, university_id, college_id, department_id } = data;
+
+  const [result] = await db.promise().query(
+    `UPDATE users SET 
+      username = ?, email = ?, password = ?, role = ?, 
+      authority_id = ?, university_id = ?, college_id = ?, department_id = ?
+     WHERE id = ?`,
+    [username, email, password, role, authority_id, university_id, college_id, department_id, id]
+  );
+
+  return result;
+};
+
+// حذف مستخدم
+const deleteUser = async (id) => {
+  const [result] = await db.promise().query(
+    'DELETE FROM users WHERE id = ?', [id]
+  );
+  return result;
+};
+
+// جلب معلومات مستخدم حسب ID
+const getUserProfileById = async (id) => {
+  const [rows] = await db.promise().query(
+    `SELECT id, username, email, role, authority_id, university_id, college_id, department_id, created_at 
+     FROM users 
+     WHERE id = ?`,
+    [id]
+  );
+  return rows[0];
+};
+
+module.exports = {
+  createUser,
+  getAllUsers,
+  updateUser,
+  getUserProfileById,
+  deleteUser
+};
